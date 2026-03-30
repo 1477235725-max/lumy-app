@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搭搭 - 甜甜的搭子都在这✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', '幼圆', sans-serif;
+        }
+
+        /* 可爱风配色：马卡龙粉+薄荷绿+奶黄，柔和不刺眼 */
+        :root {
+            --main-pink: #FF86B3;
+            --light-pink: #FFD6E0;
+            --mint-green: #91E5D8;
+            --light-green: #E6F7F4;
+            --milk-yellow: #FFE898;
+            --light-yellow: #FFF9E3;
+            --white: #fff;
+            --gray-text: #666;
+            --soft-shadow: 0 6px 16px rgba(255, 134, 179, 0.15);
+            --round: 20px; /* 超大圆角，强化可爱感 */
+            --chat-bg: #F8F9FA;
+            --mine-msg: #FF86B3;
+            --other-msg: #E9ECEF;
+        }
+
+        body {
+            background-color: #FCFCFC;
+            color: var(--gray-text);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        /* 顶部导航 - 可爱胶囊样式 */
+        .header {
+            background: var(--white);
+            box-shadow: var(--soft-shadow);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            padding: 15px 20px;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--main-pink);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "✨";
+            font-size: 24px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--main-pink);
+            color: var(--white);
+            border-radius: 50px; /* 胶囊按钮 */
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(255, 134, 179, 0.2);
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #FF6DA8;
+            transform: translateY(-2px);
+        }
+
+        /* 主体容器 */
+        .container {
+            max-width: 1200px;
+            margin: 90px auto 20px;
+            padding: 0 20px;
+        }
+
+        /* 页面容器 - 新增：用于不同页面切换 */
+        .page {
+            display: none; /* 默认隐藏所有页面 */
+            position: relative;
+            height: calc(100vh - 170px);
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .page.active {
+            display: block; /* 只显示激活的页面 */
+        }
+
+        /* 详情页特殊处理 */
+        #detailPage.active {
+            display: block;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* 聊天页特殊处理 */
+        #chatPage.active {
+            display: flex;
+            height: calc(100vh - 170px);
+            overflow: hidden;
+        }
+
+        /* Banner - 渐变+可爱文案 */
+        .banner {
+            background: linear-gradient(135deg, var(--main-pink), var(--mint-green));
+            color: var(--white);
+            padding: 40px 20px;
+            border-radius: var(--round);
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: var(--soft-shadow);
+        }
+
+        .banner h1 {
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .banner p {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+
+        /* 功能标签栏 - 可爱选项卡 */
+        .tab-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-item {
+            padding: 8px 20px;
+            background: var(--white);
+            border-radius: 50px;
+            border: 2px solid var(--light-pink);
+            color: var(--main-pink);
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .tab-item.active {
+            background: var(--main-pink);
+            color: var(--white);
+            border-color: var(--main-pink);
+        }
+
+        /* 搜索栏 - 圆润可爱 */
+        .search-box {
+            background: var(--white);
+            padding: 20px;
+            border-radius: var(--round);
+            box-shadow: var(--soft-shadow);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .search-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gray-text);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .search-item input,
+        .search-item select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--light-pink);
+            border-radius: 50px;
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s;
+            background: var(--light-yellow);
+        }
+
+        .search-item input:focus,
+        .search-item select:focus {
+            border-color: var(--main-pink);
+            background: var(--white);
+        }
+
+        .search-btn {
+            background: var(--main-pink);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 4px 8px rgba(255, 134, 179, 0.2);
+            transition: 0.3s;
+        }
+
+        .search-btn:hover {
+            background: #FF6DA8;
+            transform: translateY(-2px);
+        }
+
+        /* 筛选栏 - 可爱小标签 */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-tag {
+            padding: 6px 16px;
+            background: var(--light-green);
+            color: #55C9B7;
+            border-radius: 50px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .filter-tag.active {
+            background: var(--mint-green);
+            color: var(--white);
+        }
+
+        /* 搭子卡片列表 - 可爱卡片样式 */
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--round);
+            overflow: hidden;
+            box-shadow: var(--soft-shadow);
+            transition: transform 0.3s;
+            border: 2px solid var(--light-pink);
+            cursor: pointer; /* 新增：添加鼠标指针样式 */
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(255, 134, 179, 0.2);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: var(--light-yellow);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            background: var(--light-pink);
+            color: var(--main-pink);
+            font-size: 12px;
+            border-radius: 50px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-info {
+            color: var(--gray-text);
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .card-info span {
+            display: inline-block;
+            margin-right: 10px;
+            padding-left: 18px;
+            position: relative;
+        }
+
+        .card-info span::before {
+            content: "📍";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .card-info span.time::before {
+            content: "⏰";
+        }
+
+        .card-info span.people::before {
+            content: "👫";
+        }
+
+        .card-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-count {
+            font-size: 13px;
+            color: var(--main-pink);
+            font-weight: bold;
+        }
+
+        .join-btn {
+            padding: 8px 20px;
+            background: var(--milk-yellow);
+            color: #E6A800;
+            border-radius: 50px;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(255, 232, 152, 0.3);
+            transition: 0.3s;
+        }
+
+        .join-btn:hover {
+            background: #FFDF7E;
+            transform: translateY(-2px);
+        }
+
+        /* ========== 优化后的详情页样式 ========== */
+        .detail-page {
+            padding: 0;
+            position: relative;
+            background: var(--white);
+            min-height: 100vh;
+        }
+
+        /* 详情页顶部返回按钮 */
+        .detail-page .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--light-pink);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(255, 134, 179, 0.25);
+            transition: all 0.3s;
+            color: var(--main-pink);
+            font-weight: bold;
+        }
+
+        .detail-page .back-btn:hover {
+            background: var(--main-pink);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* 详情页封面图 */
+        .detail-hero {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            background: var(--light-pink);
+        }
+
+        .detail-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 详情页内容容器 */
+        .detail-content {
+            background: var(--white);
+            padding: 30px;
+        }
+
+        /* 详情页标签 */
+        .detail-tag {
+            display: inline-block;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, var(--light-pink), var(--mint-green));
+            color: white;
+            font-size: 14px;
+            border-radius: 50px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(255, 134, 179, 0.2);
+        }
+
+        /* 详情页标题 */
+        .detail-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        /* 详情页信息卡片 */
+        .detail-info {
+            background: linear-gradient(135deg, var(--light-yellow), var(--light-green));
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid var(--light-pink);
+        }
+
+        .detail-info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .detail-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-info-item .icon {
+            font-size: 20px;
+            width: 30px;
+            text-align: center;
+        }
+
+        /* 详情页描述 */
+        .detail-desc {
+            font-size: 16px;
+            line-height: 2;
+            margin-bottom: 30px;
+            color: #555;
+            padding: 20px;
+            background: var(--light-yellow);
+            border-radius: 15px;
+            border-left: 4px solid var(--main-pink);
+        }
+
+        .detail-desc p {
+            margin-bottom: 15px;
+        }
+
+        .detail-desc p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 详情页操作按钮 */
+        .detail-action {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-btn {
+            background: linear-gradient(135deg, var(--mint-green), #7DD3C0);
+            color: white;
+        }
+
+        .chat-btn:hover {
+            background: linear-gradient(135deg, #7DD3C0, var(--mint-green));
+        }
+
+        .join-detail-btn {
+            background: linear-gradient(135deg, var(--main-pink), #FF6DA8);
+            color: white;
+        }
+
+        .join-detail-btn:hover {
+            background: linear-gradient(135deg, #FF6DA8, var(--main-pink));
+        }
+
+        /* 详情页参与人数统计 */
+        .detail-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed var(--light-pink);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--main-pink);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray-text);
+        }
+
+        /* 其他页面基础样式 */
+        .empty-page {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--gray-text);
+        }
+
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: var(--light-pink);
+        }
+
+        .empty-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .empty-desc {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .go-action {
+            padding: 12px 30px;
+            background: var(--main-pink);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 发布弹窗（隐藏状态，点击发布按钮显示） */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: var(--white);
+            width: 90%;
+            max-width: 500px;
+            border-radius: var(--round);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            color: var(--main-pink);
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-form .form-item {
+            margin-bottom: 15px;
+        }
+
+        .modal-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--gray-text);
+        }
+
+        .modal-form input,
+        .modal-form select,
+        .modal-form textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--light-pink);
+            border-radius: 15px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .modal-form textarea {
+            min-height: 100px;
+            resize: none;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 15px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .cancel-btn {
+            background: #EEEEEE;
+            color: var(--gray-text);
+        }
+
+        .submit-btn {
+            background: var(--main-pink);
+            color: var(--white);
+        }
+
+        /* 底部固定导航（移动端） */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            z-index: 998;
+        }
+
+        .bottom-nav-list {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .bottom-nav-item {
+            text-align: center;
+            color: var(--gray-text);
+            font-size: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bottom-nav-item i {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+            color: var(--main-pink);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--main-pink);
+            font-weight: bold;
+        }
+
+        /* 未读消息提示 */
+        .unread-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .search-box {
+                flex-direction: column;
+            }
+            .search-btn {
+                padding: 12px;
+                width: 100%;
+            }
+            .banner h1 {
+                font-size: 26px;
+            }
+            .bottom-nav {
+                display: block;
+            }
+            .container {
+                margin-bottom: 80px;
+            }
+            .card-list {
+                grid-template-columns: 1fr;
+            }
+            .detail-title {
+                font-size: 24px;
+            }
+            .detail-hero {
+                height: 250px;
+            }
+            .detail-content {
+                padding: 20px;
+            }
+            .detail-action {
+                flex-direction: column;
+            }
+            .detail-page .back-btn {
+                top: 70px;
+                left: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .detail-hero {
+                height: 250px;
+            }
+
+            .detail-content {
+                padding: 20px 15px;
+            }
+
+            .detail-title {
+                font-size: 24px;
+            }
+
+            .detail-action {
+                flex-direction: column;
+            }
+        }
+
+        /* ========== IM系统样式 ========== */
+        /* 聊天列表样式 */
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--white);
+            border-radius: var(--round);
+            box-shadow: var(--soft-shadow);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .chat-item:hover {
+            transform: translateX(5px);
+        }
+
+        .chat-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--light-pink);
+        }
+
+        .chat-info {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .chat-last-msg {
+            font-size: 14px;
+            color: var(--gray-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: #999;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .chat-unread {
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        /* 聊天窗口样式 */
+        .chat-page {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 170px);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--white);
+            border-radius: var(--round) var(--round) 0 0;
+            box-shadow: var(--soft-shadow);
+        }
+
+        /* 聊天页返回按钮独立样式 */
+        .chat-page .back-btn {
+            background: var(--light-pink);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--main-pink);
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .chat-page .back-btn:hover {
+            background: var(--main-pink);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .chat-header-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .chat-header-status {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 聊天内容区域 */
+        .chat-content {
+            flex: 1;
+            padding: 20px;
+            background: var(--chat-bg);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 消息气泡样式 */
+        .msg {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .msg-mine {
+            background: var(--mine-msg);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .msg-other {
+            background: var(--other-msg);
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            position: absolute;
+            bottom: -15px;
+            color: #999;
+        }
+
+        .msg-mine .msg-time {
+            right: 10px;
+        }
+
+        .msg-other .msg-time {
+            left: 10px;
+        }
+
+        /* 聊天输入区域 */
+        .chat-input-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: var(--white);
+            border-radius: 0 0 var(--round) var(--round);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--light-pink);
+            border-radius: 50px;
+            outline: none;
+            font-size: 14px;
+            resize: none;
+            height: 45px;
+        }
+
+        .send-btn {
+            background: var(--main-pink);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="header">
+        <div class="nav">
+            <div class="logo">搭搭</div>
+            <button class="nav-btn" onclick="openModal()">发布搭子✨</button>
+        </div>
+    </div>
+
+    <!-- 主体内容 - 改为多页面结构 -->
+    <div class="container">
+        <!-- 首页 -->
+        <div class="page active" id="homePage">
+            <!-- Banner -->
+            <div class="banner">
+                <h1>找搭子，就上搭搭💖</h1>
+                <p>学习/干饭/旅行/运动，甜甜的搭子在等你～</p>
+            </div>
+
+            <!-- 功能标签栏 -->
+            <div class="tab-bar">
+                <div class="tab-item active">全部搭子</div>
+                <div class="tab-item">学习搭子</div>
+                <div class="tab-item">干饭搭子</div>
+                <div class="tab-item">运动搭子</div>
+                <div class="tab-item">旅行搭子</div>
+                <div class="tab-item">追剧搭子</div>
+                <div class="tab-item">游戏搭子</div>
+            </div>
+
+            <!-- 搜索栏 -->
+            <div class="search-box">
+                <div class="search-item">
+                    <label>搭子类型</label>
+                    <select>
+                        <option>全部类型</option>
+                        <option>学习搭子</option>
+                        <option>运动搭子</option>
+                        <option>干饭搭子</option>
+                        <option>旅行搭子</option>
+                        <option>追剧搭子</option>
+                        <option>游戏搭子</option>
+                    </select>
+                </div>
+                <div class="search-item">
+                    <label>所在城市</label>
+                    <input type="text" placeholder="输入你的城市～">
+                </div>
+                <div class="search-item">
+                    <label>关键词</label>
+                    <input type="text" placeholder="搜索搭子/活动✨">
+                </div>
+                <button class="search-btn">立即搜索🔍</button>
+            </div>
+
+            <!-- 筛选栏 -->
+            <div class="filter-bar">
+                <div class="filter-tag active">全部</div>
+                <div class="filter-tag">同城</div>
+                <div class="filter-tag">今日新增</div>
+                <div class="filter-tag">女生优先</div>
+                <div class="filter-tag">男生优先</div>
+                <div class="filter-tag">不限性别</div>
+            </div>
+
+            <!-- 搭子卡片列表 -->
+            <div class="card-list">
+                <!-- 卡片1：学习搭子 -->
+                <div class="card" onclick="showDetail('study')">
+                    <img src="https://picsum.photos/seed/study/300/200" class="card-img" alt="学习搭子">
+                    <div class="card-content">
+                        <span class="card-tag">学习搭子</span>
+                        <h3 class="card-title">考研自习室组队💪</h3>
+                        <p class="card-info">
+                            <span>北京</span>
+                            <span class="time">每天8:00-22:00</span>
+                            <span class="people">限3人</span>
+                        </p>
+                        <p class="card-info">一起卷上岸！互相监督，拒绝摆烂～</p>
+                        <div class="card-foot">
+                            <span class="card-count">已有2人✨</span>
+                            <button class="join-btn" onclick="event.stopPropagation(); joinGroup()">加入搭子</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片2：运动搭子 -->
+                <div class="card" onclick="showDetail('sport')">
+                    <img src="https://picsum.photos/seed/sport/300/200" class="card-img" alt="运动搭子">
+                    <div class="card-content">
+                        <span class="card-tag">运动搭子</span>
+                        <h3 class="card-title">周末羽毛球约球🏸</h3>
+                        <p class="card-info">
+                            <span>上海</span>
+                            <span class="time">周六14:00</span>
+                            <span class="people">限4人</span>
+                        </p>
+                        <p class="card-info">新手友好！打完球一起干饭～</p>
+                        <div class="card-foot">
+                            <span class="card-count">已有1人✨</span>
+                            <button class="join-btn" onclick="event.stopPropagation(); joinGroup()">加入搭子</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片3：干饭搭子 -->
+                <div class="card" onclick="showDetail('food')">
+                    <img src="https://picsum.photos/seed/food/300/200" class="card-img" alt="干饭搭子">
+                    <div class="card-content">
+                        <span class="card-tag">干饭搭子</span>
+                        <h3 class="card-title">火锅探店组队🍲</h3>
+                        <p class="card-info">
+                            <span>广州</span>
+                            <span class="time">周五18:00</span>
+                            <span class="people">限2人</span>
+                        </p>
+                        <p class="card-info">能吃辣的来！AA制，主打一个快乐干饭～</p>
+                        <div class="card-foot">
+                            <span class="card-count">已有1人✨</span>
+                            <button class="join-btn" onclick="event.stopPropagation(); joinGroup()">加入搭子</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片4：旅行搭子 -->
+                <div class="card" onclick="showDetail('travel')">
+                    <img src="https://picsum.photos/seed/travel/300/200" class="card-img" alt="旅行搭子">
+                    <div class="card-content">
+                        <span class="card-tag">旅行搭子</span>
+                        <h3 class="card-title">杭州西湖一日游🌿</h3>
+                        <p class="card-info">
+                            <span>杭州</span>
+                            <span class="time">下周日</span>
+                            <span class="people">限3人</span>
+                        </p>
+                        <p class="card-info">佛系游玩，拍照好看的优先～</p>
+                        <div class="card-foot">
+                            <span class="card-count">已有2人✨</span>
+                            <button class="join-btn" onclick="event.stopPropagation(); joinGroup()">加入搭子</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片5：追剧搭子 -->
+                <div class="card" onclick="showDetail('tv')">
+                    <img src="https://picsum.photos/seed/tv/300/200" class="card-img" alt="追剧搭子">
+                    <div class="card-content">
+                        <span class="card-tag">追剧搭子</span>
+                        <h3 class="card-title">一起追新剧🎬</h3>
+                        <p class="card-info">
+                            <span>线上</span>
+                            <span class="time">每晚20:00</span>
+                            <span class="people">不限人数</span>
+                        </p>
+                        <p class="card-info">边看边吐槽，拒绝一个人追剧的孤单～</p>
+                        <div class="card-foot">
+                            <span class="card-count">已有5人✨</span>
+                            <button class="join-btn" onclick="event.stopPropagation(); joinGroup()">加入搭子</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片6：游戏搭子 -->
+                <div class="card" onclick="showDetail('game')">
+                    <img src="https://picsum.photos/seed/game/300/200" class="card-img" alt="游戏搭子">
+                    <div class="card-content">
+                        <span class="card-tag">游戏搭子</span>
+                        <h3 class="card-title">王者开黑组队🎮</h3>
+                        <p class="card-info">
+                            <span>线上</span>
+                            <span class="time">每晚19:00</span>
+                            <span class="people">限5人</span>
+                        </p>
+                        <p class="card-info">娱乐局，不骂人，输赢无所谓～</p>
+                        <div class="card-foot">
+                            <span class="card-count">已有3人✨</span>
+                            <button class="join-btn" onclick="event.stopPropagation(); joinGroup()">加入搭子</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 找搭子页面 -->
+        <div class="page" id="searchPage">
+            <div class="empty-page">
+                <div class="empty-icon">🔍</div>
+                <h3 class="empty-title">精准找搭子</h3>
+                <p class="empty-desc">正在为你匹配最合适的搭子<br>可以使用筛选条件缩小范围哦</p>
+                <button class="go-action" onclick="switchPage('homePage')">返回首页</button>
+            </div>
+        </div>
+
+        <!-- 消息页面 - 改为聊天列表 -->
+        <div class="page" id="messagePage">
+            <div class="chat-list">
+                <!-- 聊天项1 -->
+                <div class="chat-item" onclick="openChat('studyPartner')">
+                    <img src="https://picsum.photos/seed/study1/100/100" class="chat-avatar" alt="考研搭子">
+                    <div class="chat-info">
+                        <div class="chat-name">考研搭子小分队 <span class="chat-unread">3</span></div>
+                        <div class="chat-last-msg">小明：今天的单词背完了吗？</div>
+                        <div class="chat-time">10:20</div>
+                    </div>
+                </div>
+
+                <!-- 聊天项2 -->
+                <div class="chat-item" onclick="openChat('badmintonGroup')">
+                    <img src="https://picsum.photos/seed/sport1/100/100" class="chat-avatar" alt="羽毛球搭子">
+                    <div class="chat-info">
+                        <div class="chat-name">羽毛球搭子</div>
+                        <div class="chat-last-msg">小李：周六见！我带球拍～</div>
+                        <div class="chat-time">昨天</div>
+                    </div>
+                </div>
+
+                <!-- 聊天项3 -->
+                <div class="chat-item" onclick="openChat('foodGroup')">
+                    <img src="https://picsum.photos/seed/food1/100/100" class="chat-avatar" alt="火锅搭子">
+                    <div class="chat-info">
+                        <div class="chat-name">火锅搭子 <span class="chat-unread">1</span></div>
+                        <div class="chat-last-msg">小红：微辣还是特辣？</div>
+                        <div class="chat-time">周三</div>
+                    </div>
+                </div>
+
+                <!-- 聊天项4 -->
+                <div class="chat-item" onclick="openChat('travelGroup')">
+                    <img src="https://picsum.photos/seed/travel1/100/100" class="chat-avatar" alt="旅行搭子">
+                    <div class="chat-info">
+                        <div class="chat-name">杭州旅行搭子</div>
+                        <div class="chat-last-msg">小张：我已经订好酒店了</div>
+                        <div class="chat-time">周一</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 聊天窗口页面 -->
+        <div class="page chat-page" id="chatPage">
+            <!-- 聊天头部 -->
+            <div class="chat-header">
+                <button class="back-btn" onclick="switchPage('messagePage')">←</button>
+                <img id="chatAvatar" src="" class="chat-header-avatar" alt="">
+                <div class="chat-header-info">
+                    <div id="chatName" class="chat-header-name"></div>
+                    <div class="chat-header-status">在线</div>
+                </div>
+            </div>
+
+            <!-- 聊天内容 -->
+            <div id="chatContent" class="chat-content">
+                <!-- 消息会通过JS动态生成 -->
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="chat-input-area">
+                <textarea id="chatInput" class="chat-input" placeholder="输入消息～"></textarea>
+                <button class="send-btn" onclick="sendMessage()">✈️</button>
+            </div>
+        </div>
+
+        <!-- 我的页面 -->
+        <div class="page" id="minePage">
+            <div class="empty-page">
+                <div class="empty-icon">👤</div>
+                <h3 class="empty-title">我的个人中心</h3>
+                <p class="empty-desc">登录后可以查看我的搭子、发布的内容等</p>
+                <button class="go-action" onclick="alert('登录功能开发中～✨')">立即登录</button>
+            </div>
+        </div>
+
+        <!-- 优化后的详情页 -->
+        <div class="page detail-page" id="detailPage">
+            <button class="back-btn" onclick="switchPage('homePage')">←</button>
+            <div class="detail-hero">
+                <img id="detailImage" src="" class="detail-img" alt="">
+            </div>
+            <div class="detail-content">
+                <span id="detailTag" class="detail-tag"></span>
+                <h2 id="detailTitle" class="detail-title"></h2>
+
+                <div class="detail-info">
+                    <div class="detail-info-item">
+                        <span class="icon">📍</span>
+                        <span id="detailLocation"></span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="icon">⏰</span>
+                        <span id="detailTime"></span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="icon">👫</span>
+                        <span id="detailPeople"></span>
+                    </div>
+                </div>
+
+                <div id="detailDesc" class="detail-desc"></div>
+
+                <div class="detail-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="statJoined">3</div>
+                        <div class="stat-label">已加入</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statTotal">5</div>
+                        <div class="stat-label">总浏览</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statInterest">12</div>
+                        <div class="stat-label">感兴趣</div>
+                    </div>
+                </div>
+
+                <div class="detail-action">
+                    <button class="detail-btn chat-btn" onclick="openChatFromDetail()">💬 私信TA</button>
+                    <button class="detail-btn join-detail-btn" onclick="joinGroup()">✨ 加入搭子</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端底部导航 -->
+    <div class="bottom-nav">
+        <div class="bottom-nav-list">
+            <div class="bottom-nav-item active" onclick="switchPage('homePage')">
+                <i>🏠</i>
+                <div>首页</div>
+            </div>
+            <div class="bottom-nav-item" onclick="switchPage('searchPage')">
+                <i>🔍</i>
+                <div>找搭子</div>
+            </div>
+            <div class="bottom-nav-item" onclick="openModal()">
+                <i>✏️</i>
+                <div>发布</div>
+            </div>
+            <div class="bottom-nav-item" onclick="switchPage('messagePage')">
+                <i>💬</i>
+                <div>消息</div>
+                <span class="unread-badge">4</span>
+            </div>
+            <div class="bottom-nav-item" onclick="switchPage('minePage')">
+                <i>👤</i>
+                <div>我的</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布搭子弹窗 -->
+    <div class="modal" id="publishModal">
+        <div class="modal-content">
+            <h3 class="modal-title">发布我的搭子✨</h3>
+            <form class="modal-form" id="publishForm">
+                <div class="form-item">
+                    <label>搭子类型</label>
+                    <select id="typeSelect">
+                        <option>学习搭子</option>
+                        <option>干饭搭子</option>
+                        <option>运动搭子</option>
+                        <option>旅行搭子</option>
+                        <option>追剧搭子</option>
+                        <option>游戏搭子</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>标题</label>
+                    <input type="text" id="titleInput" placeholder="给你的搭子起个可爱的标题～">
+                </div>
+                <div class="form-item">
+                    <label>所在城市/线上</label>
+                    <input type="text" id="cityInput" placeholder="比如：北京 / 线上">
+                </div>
+                <div class="form-item">
+                    <label>时间</label>
+                    <input type="text" id="timeInput" placeholder="比如：每天8:00-22:00">
+                </div>
+                <div class="form-item">
+                    <label>人数限制</label>
+                    <input type="text" id="peopleInput" placeholder="比如：限3人 / 不限">
+                </div>
+                <div class="form-item">
+                    <label>详细描述</label>
+                    <textarea id="descInput" placeholder="说说你的搭子要求吧～"></textarea>
+                </div>
+                <div class="modal-btn-group">
+                    <button type="button" class="modal-btn cancel-btn" onclick="closeModal()">取消</button>
+                    <button type="button" class="modal-btn submit-btn" onclick="submitPublish()">发布</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 存储搭子详情数据
+        const cardData = {
+            study: {
+                image: "https://picsum.photos/seed/study/600/400",
+                tag: "学习搭子",
+                title: "考研自习室组队💪",
+                location: "北京",
+                time: "每天8:00-22:00",
+                people: "限3人",
+                desc: "一起卷上岸！互相监督，拒绝摆烂～\n\n自习室地点：北京市海淀区中关村大街1号\n要求：每天学习时间不少于8小时，认真备考不摸鱼\n福利：每周分享学习资料，互相答疑解惑",
+                stats: { joined: 2, total: 156, interest: 23 }
+            },
+            sport: {
+                image: "https://picsum.photos/seed/sport/600/400",
+                tag: "运动搭子",
+                title: "周末羽毛球约球🏸",
+                location: "上海",
+                time: "周六14:00",
+                people: "限4人",
+                desc: "新手友好！打完球一起干饭～\n\n地点：上海市浦东新区羽球馆\n费用：场地费AA（约20元/人）\n装备：可自带球拍，也可现场租借",
+                stats: { joined: 1, total: 89, interest: 15 }
+            },
+            food: {
+                image: "https://picsum.photos/seed/food/600/400",
+                tag: "干饭搭子",
+                title: "火锅探店组队🍲",
+                location: "广州",
+                time: "周五18:00",
+                people: "限2人",
+                desc: "能吃辣的来！AA制，主打一个快乐干饭～\n\n店铺：广州市天河区大龙焱火锅\n特色：正宗川味火锅，鸭血和毛肚必点\n备注：不吃辣的小伙伴也可以点鸳鸯锅",
+                stats: { joined: 1, total: 234, interest: 45 }
+            },
+            travel: {
+                image: "https://picsum.photos/seed/travel/600/400",
+                tag: "旅行搭子",
+                title: "杭州西湖一日游🌿",
+                location: "杭州",
+                time: "下周日",
+                people: "限3人",
+                desc: "佛系游玩，拍照好看的优先～\n\n行程：断桥残雪 → 白堤 → 苏堤 → 雷峰塔\n费用：门票自理，交通AA\n要求：会拍照，性格随和，不赶时间",
+                stats: { joined: 2, total: 312, interest: 67 }
+            },
+            tv: {
+                image: "https://picsum.photos/seed/tv/600/400",
+                tag: "追剧搭子",
+                title: "一起追新剧🎬",
+                location: "线上",
+                time: "每晚20:00",
+                people: "不限人数",
+                desc: "边看边吐槽，拒绝一个人追剧的孤单～\n\n追剧内容：最新热播剧《繁花》\n方式：腾讯会议同步观看，语音吐槽\n要求：不剧透，能聊能侃，有共同话题",
+                stats: { joined: 5, total: 567, interest: 89 }
+            },
+            game: {
+                image: "https://picsum.photos/seed/game/600/400",
+                tag: "游戏搭子",
+                title: "王者开黑组队🎮",
+                location: "线上",
+                time: "每晚19:00",
+                people: "限5人",
+                desc: "娱乐局，不骂人，输赢无所谓～\n\n游戏：王者荣耀\n段位：钻石-星耀\n要求：心态好，不摆烂，会玩辅助优先\n福利：连胜有小红包奖励",
+                stats: { joined: 3, total: 423, interest: 56 }
+            }
+        };
+
+        // 聊天数据
+        const chatData = {
+            studyPartner: {
+                name: "考研搭子小分队",
+                avatar: "https://picsum.photos/seed/study1/100/100",
+                messages: [
+                    { type: "other", content: "大家好！我是群主～", time: "09:00" },
+                    { type: "other", content: "今天的学习计划是背200个单词+刷一套真题", time: "09:05" },
+                    { type: "mine", content: "收到！我已经背了100个了", time: "09:10" },
+                    { type: "other", content: "今天的单词背完了吗？", time: "10:20" }
+                ]
+            },
+            badmintonGroup: {
+                name: "羽毛球搭子",
+                avatar: "https://picsum.photos/seed/sport1/100/100",
+                messages: [
+                    { type: "other", content: "哈喽～周末一起打羽毛球吗？", time: "昨天 14:30" },
+                    { type: "mine", content: "可以呀！几点？", time: "昨天 14:35" },
+                    { type: "other", content: "周六见！我带球拍～", time: "昨天 15:00" }
+                ]
+            },
+            foodGroup: {
+                name: "火锅搭子",
+                avatar: "https://picsum.photos/seed/food1/100/100",
+                messages: [
+                    { type: "other", content: "周五晚上约火锅？", time: "周三 20:15" },
+                    { type: "mine", content: "好呀好呀！想吃哪家？", time: "周三 20:20" },
+                    { type: "other", content: "微辣还是特辣？", time: "周三 20:25" }
+                ]
+            },
+            travelGroup: {
+                name: "杭州旅行搭子",
+                avatar: "https://picsum.photos/seed/travel1/100/100",
+                messages: [
+                    { type: "other", content: "下周日去杭州玩有人一起吗？", time: "周一 09:10" },
+                    { type: "mine", content: "我想去！都去哪些地方？", time: "周一 09:15" },
+                    { type: "other", content: "我已经订好酒店了", time: "周一 10:30" }
+                ]
+            },
+            default: {
+                name: "搭子好友",
+                avatar: "https://picsum.photos/seed/default/100/100",
+                messages: [
+                    { type: "other", content: "你好呀～很高兴认识你！", time: "刚刚" }
+                ]
+            }
+        };
+
+        // 当前聊天ID
+        let currentChatId = '';
+
+        // 页面切换函数
+        function switchPage(pageId) {
+            // 隐藏所有页面
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+
+            // 显示目标页面
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                targetPage.style.display = '';
+            }
+
+            // 更新底部导航状态
+            const navItems = document.querySelectorAll('.bottom-nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+
+            // 匹配导航项
+            const navMap = {
+                'homePage': 0,
+                'searchPage': 1,
+                'messagePage': 3,
+                'minePage': 4
+            };
+
+            if (navMap[pageId] !== undefined) {
+                navItems[navMap[pageId]].classList.add('active');
+            }
+        }
+
+        // 显示详情页
+        function showDetail(cardId) {
+            const data = cardData[cardId];
+            if (!data) {
+                console.error('找不到卡片数据:', cardId);
+                return;
+            }
+
+            document.getElementById('detailImage').src = data.image;
+            document.getElementById('detailTag').textContent = data.tag;
+            document.getElementById('detailTitle').textContent = data.title;
+            document.getElementById('detailLocation').textContent = data.location;
+            document.getElementById('detailTime').textContent = data.time;
+            document.getElementById('detailPeople').textContent = data.people;
+
+            // 将 \n 转换为 <br> 标签
+            const formattedDesc = data.desc.replace(/\n/g, '<br>');
+            document.getElementById('detailDesc').innerHTML = formattedDesc;
+
+            // 设置统计数据
+            document.getElementById('statJoined').textContent = data.stats.joined;
+            document.getElementById('statTotal').textContent = data.stats.total;
+            document.getElementById('statInterest').textContent = data.stats.interest;
+
+            switchPage('detailPage');
+        }
+
+        // 发布弹窗控制
+        function openModal() {
+            document.getElementById('publishModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('publishModal').style.display = 'none';
+            // 清空表单
+            document.getElementById('publishForm').reset();
+        }
+
+        // 点击空白处关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('publishModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // 提交发布表单
+        function submitPublish() {
+            const title = document.getElementById('titleInput').value;
+            const city = document.getElementById('cityInput').value;
+            const time = document.getElementById('timeInput').value;
+
+            // 简单表单验证
+            if (!title) {
+                alert('请填写搭子标题～✨');
+                return;
+            }
+            if (!city) {
+                alert('请填写所在城市或线上～✨');
+                return;
+            }
+            if (!time) {
+                alert('请填写活动时间～✨');
+                return;
+            }
+
+            alert('发布成功！你的搭子很快就会找到你啦～✨');
+            closeModal();
+            switchPage('homePage');
+        }
+
+        // 加入搭子
+        function joinGroup() {
+            alert('成功加入搭子！快去和小伙伴聊聊吧～💖');
+            // 加入后自动跳转到消息页面
+            setTimeout(() => {
+                switchPage('messagePage');
+            }, 1500);
+        }
+
+        // 标签切换效果
+        const tabItems = document.querySelectorAll('.tab-item');
+        tabItems.forEach(item => {
+            item.addEventListener('click', () => {
+                tabItems.forEach(t => t.classList.remove('active'));
+                item.classList.add('active');
+                // 这里可以添加标签筛选逻辑
+            });
+        });
+
+        // 筛选标签切换
+        const filterTags = document.querySelectorAll('.filter-tag');
+        filterTags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                filterTags.forEach(t => t.classList.remove('active'));
+                tag.classList.add('active');
+                // 这里可以添加筛选逻辑
+            });
+        });
+
+        // 搜索按钮点击
+        const searchBtn = document.querySelector('.search-btn');
+        searchBtn.addEventListener('click', () => {
+            switchPage('searchPage');
+        });
+
+        // ========== IM系统功能 ==========
+        // 打开聊天窗口
+        function openChat(chatId) {
+            currentChatId = chatId;
+            const chat = chatData[chatId] || chatData.default;
+
+            // 设置聊天信息
+            document.getElementById('chatAvatar').src = chat.avatar;
+            document.getElementById('chatName').textContent = chat.name;
+
+            // 渲染聊天消息
+            renderChatMessages(chat.messages);
+
+            // 切换到聊天页面
+            switchPage('chatPage');
+
+            // 滚动到底部
+            const chatContent = document.getElementById('chatContent');
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // 从详情页打开聊天
+        function openChatFromDetail() {
+            // 默认打开第一个聊天
+            openChat('studyPartner');
+        }
+
+        // 渲染聊天消息
+        function renderChatMessages(messages) {
+            const chatContent = document.getElementById('chatContent');
+            chatContent.innerHTML = '';
+
+            messages.forEach(msg => {
+                const msgClass = msg.type === 'mine' ? 'msg msg-mine' : 'msg msg-other';
+                const msgHtml = `
+                    <div class="${msgClass}">
+                        ${msg.content}
+                        <div class="msg-time">${msg.time}</div>
+                    </div>
+                `;
+                chatContent.innerHTML += msgHtml;
+            });
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            // 获取当前时间
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const time = `${hours}:${minutes}`;
+
+            // 添加我的消息
+            const newMsg = {
+                type: "mine",
+                content: content,
+                time: time
+            };
+
+            // 更新聊天数据
+            if (!chatData[currentChatId]) {
+                chatData[currentChatId] = JSON.parse(JSON.stringify(chatData.default));
+            }
+            chatData[currentChatId].messages.push(newMsg);
+
+            // 重新渲染
+            renderChatMessages(chatData[currentChatId].messages);
+
+            // 清空输入框
+            input.value = '';
+
+            // 滚动到底部
+            const chatContent = document.getElementById('chatContent');
+            chatContent.scrollTop = chatContent.scrollHeight;
+
+            // 模拟对方回复
+            setTimeout(() => {
+                const replyMsg = {
+                    type: "other",
+                    content: getRandomReply(),
+                    time: time
+                };
+                chatData[currentChatId].messages.push(replyMsg);
+                renderChatMessages(chatData[currentChatId].messages);
+                chatContent.scrollTop = chatContent.scrollHeight;
+            }, 1000);
+        }
+
+        // 随机回复内容
+        function getRandomReply() {
+            const replies = [
+                "好的好的～",
+                "哈哈哈太有趣了！",
+                "没问题😜",
+                "收到收到～",
+                "好呀好呀！",
+                "嗯嗯，我也是这么觉得～",
+                "太棒啦✨",
+                "期待见面哦～"
+            ];
+            return replies[Math.floor(Math.random() * replies.length)];
+        }
+
+        // 按回车发送消息
+        document.getElementById('chatInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

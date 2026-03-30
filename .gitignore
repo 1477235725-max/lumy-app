@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+*.log
+.actual_output.txt
+.commercial_analysis.txt
+.data_summary.txt
+.output.txt
+.result.txt
+.run_output.txt
+.sheets.txt
+.stdout.txt
+.stderr.txt
