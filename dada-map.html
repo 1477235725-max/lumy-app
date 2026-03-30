@@ -65,7 +65,7 @@ function loadAMapScript(callback) {
     console.log('开始加载高德地图SDK...');
     const script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}&plugin=AMap.Geolocation,AMap.PlaceSearch`;
+    script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}&plugin=AMap.Geolocation,AMap.PlaceSearch,AMap.Geocoder`;
     script.onload = () => {
         console.log('高德地图SDK加载成功');
         callback();
@@ -77,13 +77,91 @@ function loadAMapScript(callback) {
     document.body.appendChild(script);
 }
 
-// 初始化定位
+// 初始化定位 - 使用浏览器原生定位获取更准确的位置
 function initLocation() {
-    if (!window.AMap) return;
-    
     console.log('开始定位...');
     showToast('正在获取位置...');
     
+    // 先使用浏览器原生定位API获取经纬度
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            // 成功回调
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                
+                console.log('浏览器原生定位成功:', { lat, lng, accuracy });
+                
+                // 使用高德地图逆地理编码获取详细地址
+                if (window.AMap) {
+                    const geocoder = new AMap.Geocoder({
+                        city: '全国'
+                    });
+                    
+                    geocoder.getAddress([lng, lat], (status, result) => {
+                        if (status === 'complete' && result.regeocode) {
+                            const addrComponents = result.regeocode.addressComponent || {};
+                            const detailAddress = `${addrComponents.city || ''}${addrComponents.district || ''}${addrComponents.township || ''}`.replace(/上海市/, '');
+                            
+                            currentLocation = {
+                                lng: lng,
+                                lat: lat,
+                                address: detailAddress || '当前位置'
+                            };
+                            
+                            // 更新显示
+                            updateLocationDisplay(detailAddress);
+                            
+                            console.log('逆地理编码成功:', currentLocation);
+                            showToast('定位成功');
+                        } else {
+                            console.error('逆地理编码失败:', result);
+                            // 逆地理编码失败，使用经纬度
+                            currentLocation = {
+                                lng: lng,
+                                lat: lat,
+                                address: '当前位置'
+                            };
+                            updateLocationDisplay('当前位置');
+                            showToast('定位成功');
+                        }
+                        
+                        // 搜索附近商家
+                        searchNearbyStores();
+                    });
+                }
+            },
+            // 失败回调
+            (error) => {
+                console.error('浏览器定位失败:', error);
+                
+                // 浏览器定位失败，尝试使用高德地图定位
+                if (window.AMap) {
+                    useAMapLocation();
+                } else {
+                    useDefaultLocation();
+                }
+            },
+            // 定位选项
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        console.log('浏览器不支持定位，使用高德地图定位');
+        if (window.AMap) {
+            useAMapLocation();
+        } else {
+            useDefaultLocation();
+        }
+    }
+}
+
+// 使用高德地图定位
+function useAMapLocation() {
     const geolocation = new AMap.Geolocation({
         enableHighAccuracy: true,
         timeout: 15000,
@@ -92,68 +170,55 @@ function initLocation() {
     });
     
     geolocation.getCurrentPosition((status, result) => {
-        console.log('定位结果:', status, result);
-        
         if (status === 'complete') {
-            currentLocation = {
-                lng: result.position.lng,
-                lat: result.position.lat,
-                address: result.formattedAddress || result.addressComponent?.district || '当前位置'
-            };
-            
             const addrComponents = result.addressComponent || {};
             const detailAddress = `${addrComponents.city || ''}${addrComponents.district || ''}${addrComponents.township || ''}`.replace(/上海市/, '');
             
-            // 更新所有位置显示
-            const homeLocationText = document.getElementById('homeLocationText');
-            const mapLocationText = document.getElementById('mapLocationText');
-            
-            if (homeLocationText) {
-                homeLocationText.textContent = `${detailAddress || '当前位置'} · 1.5km 内帮大家快速决定`;
-            }
-            
-            if (mapLocationText) {
-                mapLocationText.textContent = `${detailAddress || '当前位置'} · 1.5km`;
-            }
-            
-            console.log('定位成功:', currentLocation);
-            showToast('定位成功');
-            
-            // 定位成功后搜索附近商家
-            searchNearbyStores();
-        } else {
-            console.error('定位失败:', result);
-            const homeLocationText = document.getElementById('homeLocationText');
-            const mapLocationText = document.getElementById('mapLocationText');
-            
-            if (homeLocationText) {
-                homeLocationText.textContent = '定位失败，使用默认位置';
-            }
-            
-            if (mapLocationText) {
-                mapLocationText.textContent = '定位失败';
-            }
-            
-            showToast('定位失败，使用默认位置');
-            
-            // 使用默认位置搜索
             currentLocation = {
-                lng: 121.4737,
-                lat: 31.2304,
-                address: '上海市黄浦区'
+                lng: result.position.lng,
+                lat: result.position.lat,
+                address: detailAddress || '当前位置'
             };
             
-            // 更新显示
-            if (homeLocationText) {
-                homeLocationText.textContent = '上海市黄浦区 · 1.5km 内帮大家快速决定';
-            }
-            if (mapLocationText) {
-                mapLocationText.textContent = '上海市黄浦区 · 1.5km';
-            }
+            updateLocationDisplay(detailAddress);
+            console.log('高德地图定位成功:', currentLocation);
+            showToast('定位成功');
             
             searchNearbyStores();
+        } else {
+            console.error('高德地图定位失败:', result);
+            useDefaultLocation();
         }
     });
+}
+
+// 使用默认位置
+function useDefaultLocation() {
+    console.log('使用默认位置');
+    showToast('定位失败，使用默认位置');
+    
+    currentLocation = {
+        lng: 121.4737,
+        lat: 31.2304,
+        address: '上海市黄浦区'
+    };
+    
+    updateLocationDisplay('上海市黄浦区');
+    searchNearbyStores();
+}
+
+// 更新位置显示
+function updateLocationDisplay(address) {
+    const homeLocationText = document.getElementById('homeLocationText');
+    const mapLocationText = document.getElementById('mapLocationText');
+    
+    if (homeLocationText) {
+        homeLocationText.textContent = `${address || '当前位置'} · 1.5km 内帮大家快速决定`;
+    }
+    
+    if (mapLocationText) {
+        mapLocationText.textContent = `${address || '当前位置'} · 1.5km`;
+    }
 }
 
 // 搜索附近商家
@@ -406,15 +471,49 @@ function searchStores(keyword) {
 
 function renderSearchResults(stores) {
     const container = document.getElementById('searchResults');
-    
+
     if (stores.length === 0) {
         container.innerHTML = '<div class="empty">未找到相关商家</div>';
         return;
     }
-    
-    container.innerHTML = stores.map(store => storeCard(store)).join('');
-    
-    // 重新绑定按钮事件
+
+    container.innerHTML = stores.map(store => `
+        <div class="search-result-item" data-store-id="${store.id}">
+            <div class="food-item">
+                <div class="food-cover ${store.type === 'meal' ? 'bg-pink' : 'bg-mint'}">${store.emoji}</div>
+                <div class="food-copy">
+                    <strong>${store.name}</strong>
+                    <p>${store.desc}</p>
+                    <div class="food-meta">
+                        <span class="meta-chip">${store.distance > 1000 ? `${(store.distance/1000).toFixed(1)}km` : `${store.distance}m`}</span>
+                        <span class="meta-chip">人均${store.price}</span>
+                        <span class="meta-chip">${store.tags.join(' · ')}</span>
+                    </div>
+                    <div class="food-actions">
+                        <button class="mini-btn mini-primary" data-pick-id="${store.id}">抽它</button>
+                        <button class="mini-btn mini-ghost" data-detail-id="${store.id}">看详情</button>
+                    </div>
+                </div>
+            </div>
+            <div class="search-detail-panel" id="detail-${store.id}" style="display: none;">
+                <div class="card" style="margin-top: 12px; padding: 16px;">
+                    <h4 style="font-size: 18px; color: var(--text-strong); margin-bottom: 12px;">${store.name}</h4>
+                    <p style="font-size: 13px; line-height: 1.6; color: #7e728f; margin-bottom: 12px;">${store.address || '地址未知'}</p>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                        <span class="meta-chip">${store.distance > 1000 ? `${(store.distance/1000).toFixed(1)}km` : `${store.distance}m`}</span>
+                        <span class="meta-chip">人均${store.price}</span>
+                        <span class="meta-chip">${store.tags.join(' · ')}</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="navigateToStoreById(${store.id})">导航前往</button>
+                        <button class="btn btn-secondary" style="flex: 1;" onclick="closeDetail(${store.id})">收起</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    // 绑定按钮事件
     container.querySelectorAll('[data-pick-id]').forEach(btn => {
         btn.onclick = () => {
             const store = allStores.find(s => s.id === Number(btn.dataset.pickId));
@@ -424,16 +523,39 @@ function renderSearchResults(stores) {
             }
         };
     });
-    
+
     container.querySelectorAll('[data-detail-id]').forEach(btn => {
         btn.onclick = () => {
-            const store = allStores.find(s => s.id === Number(btn.dataset.detailId));
-            if (store) {
-                document.getElementById('searchOverlay').classList.remove('show');
-                openResult(store);
-            }
+            const storeId = Number(btn.dataset.detailId);
+            const detailPanel = document.getElementById(`detail-${storeId}`);
+            
+            // 关闭其他已展开的详情
+            document.querySelectorAll('.search-detail-panel').forEach(panel => {
+                if (panel.id !== `detail-${storeId}`) {
+                    panel.style.display = 'none';
+                }
+            });
+            
+            // 切换当前详情显示
+            detailPanel.style.display = detailPanel.style.display === 'none' ? 'block' : 'none';
         };
     });
+}
+
+// 导航到指定商家
+function navigateToStoreById(storeId) {
+    const store = allStores.find(s => s.id === storeId);
+    if (store) {
+        navigateToStore(store);
+    }
+}
+
+// 关闭详情面板
+function closeDetail(storeId) {
+    const detailPanel = document.getElementById(`detail-${storeId}`);
+    if (detailPanel) {
+        detailPanel.style.display = 'none';
+    }
 }
 
 function randomPick(){const pool=filterStores();if(pool.length===0){showToast('没有符合条件的商家');return;}const store=pool[Math.floor(Math.random()*pool.length)];openResult(store);}
