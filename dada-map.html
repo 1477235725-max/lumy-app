@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>今天吃什么</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .map-section {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .map-section h2 {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .map-section h2::before {
+            content: "📍";
+        }
+        
+        #map {
+            width: 100%;
+            height: 300px;
+            border-radius: 15px;
+            background: #f5f5f5;
+        }
+        
+        .location-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 0.95em;
+            color: #555;
+        }
+        
+        .location-info strong {
+            color: #667eea;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1 1 auto;
+            min-width: 120px;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .search-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .search-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .results {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .result-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .result-info span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-info span::before {
+            font-size: 1.1em;
+        }
+        
+        .rating {
+            color: #ff9800;
+            font-weight: 600;
+        }
+        
+        .distance {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+        
+        .loading::after {
+            content: "🔍";
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.1em;
+        }
+        
+        .empty::before {
+            content: "🍽️";
+            font-size: 3em;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            #map {
+                height: 250px;
+            }
+            
+            .result-name {
+                font-size: 1.2em;
+            }
+            
+            .filter-btn {
+                padding: 8px 15px;
+                font-size: 0.9em;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍜 今天吃什么？</h1>
+            <p>基于您当前位置的美食推荐</p>
+        </div>
+        
+        <div class="map-section">
+            <h2>我的位置</h2>
+            <div id="map"></div>
+            <div class="location-info" id="locationInfo">
+                <strong>正在获取位置...</strong>
+            </div>
+        </div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-type="">全部</button>
+            <button class="filter-btn" data-type="餐饮服务">中餐</button>
+            <button class="filter-btn" data-type="外国餐饮">西餐</button>
+            <button class="filter-btn" data-type="快餐服务">快餐</button>
+            <button class="filter-btn" data-type="火锅">火锅</button>
+        </div>
+        
+        <button class="search-btn" onclick="searchRestaurants()">
+            🎯 搜索附近美食
+        </button>
+        
+        <div id="results" class="results">
+            <div class="empty">
+                <p>点击上方按钮开始搜索<br>1.5km 范围内的美食</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 高德地图配置
+        const AMAP_KEY = '901de9730905a2eb52b41dec8c2e3bb8';
+        const AMAP_SECRET = '063cf87996ade55d605da015f4a36c0a';
+        
+        // 设置安全密钥
+        window._AMapSecurityConfig = {
+            securityJsCode: AMAP_SECRET,
+        }
+        
+        // 加载高德地图
+        function loadAMapScript(callback) {
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}&plugin=AMap.Geolocation,AMap.PlaceSearch,AMap.Marker`;
+            script.onload = callback;
+            script.onerror = () => {
+                showError('地图加载失败，请检查网络连接');
+            };
+            document.body.appendChild(script);
+        }
+        
+        let map = null;
+        let geolocation = null;
+        let placeSearch = null;
+        let currentLocation = null;
+        let currentFilter = '';
+        
+        // 初始化地图
+        function initMap() {
+            if (!window.AMap) {
+                showError('高德地图 SDK 未加载');
+                return;
+            }
+            
+            try {
+                // 创建地图实例
+                map = new AMap.Map('map', {
+                    zoom: 15,
+                    center: [116.397428, 39.90923], // 默认中心点（北京）
+                    viewMode: '2D',
+                    resizeEnable: true
+                });
+                
+                // 配置定位插件
+                const geolocationOptions = {
+                    enableHighAccuracy: true, // 是否使用高精度定位，默认:true
+                    timeout: 10000, // 超过10秒后停止定位，默认：5s
+                    position: 'RB', // 定位按钮的停靠位置
+                    offset: [10, 20], // 定位按钮与设置的停靠位置的偏移量
+                    zoomToAccuracy: true, // 定位成功后是否自动调整地图视野到定位点
+                };
+                
+                geolocation = new AMap.Geolocation(geolocationOptions);
+                map.addControl(geolocation);
+                
+                // 获取当前位置
+                geolocation.getCurrentPosition((status, result) => {
+                    if (status === 'complete') {
+                        currentLocation = {
+                            lng: result.position.lng,
+                            lat: result.position.lat,
+                            address: result.formattedAddress || result.addressComponent.city || '当前位置'
+                        };
+                        
+                        // 更新地图中心
+                        map.setCenter([currentLocation.lng, currentLocation.lat]);
+                        
+                        // 添加当前位置标记
+                        new AMap.Marker({
+                            position: [currentLocation.lng, currentLocation.lat],
+                            map: map,
+                            title: '我的位置',
+                            animation: 'AMAP_ANIMATION_DROP'
+                        });
+                        
+                        // 更新位置信息
+                        document.getElementById('locationInfo').innerHTML = `
+                            <strong>📍 ${currentLocation.address}</strong><br>
+                            <span style="color: #888; font-size: 0.9em;">经度: ${currentLocation.lng.toFixed(6)}, 纬度: ${currentLocation.lat.toFixed(6)}</span>
+                        `;
+                        
+                        console.log('定位成功:', currentLocation);
+                    } else {
+                        console.error('定位失败:', result);
+                        showError('定位失败：' + result.message + '<br>请允许浏览器访问您的位置信息');
+                    }
+                });
+                
+                // 初始化搜索插件
+                placeSearch = new AMap.PlaceSearch({
+                    type: '', // 兴趣点类别
+                    pageSize: 20, // 每页显示结果数
+                    pageIndex: 1, // 起始页码
+                    city: '', // 兴趣点所在城市
+                    citylimit: true, // 是否强制限制在设置的城市内搜索
+                    map: map, // 展现结果的地图实例
+                    panel: null, // 结果列表将在此容器中进行展示
+                    autoFitView: true, // 是否自动调整地图视野使绘制的 Marker点都处于视口的可见范围
+                    children: 1, // 是否展示子节点
+                    extensions: 'all' // 返回详细信息
+                });
+                
+                console.log('地图初始化完成');
+            } catch (error) {
+                console.error('地图初始化错误:', error);
+                showError('地图初始化失败：' + error.message);
+            }
+        }
+        
+        // 搜索餐厅
+        function searchRestaurants() {
+            if (!currentLocation) {
+                showError('请先允许获取您的位置信息');
+                return;
+            }
+            
+            if (!placeSearch) {
+                showError('搜索功能未初始化');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">正在搜索附近美食...</div>';
+            
+            // 搜索关键词
+            const keywords = '餐厅|美食|饭店|小吃|火锅|烧烤|快餐';
+            
+            // 搜索半径：1.5km = 1500m
+            const radius = 1500;
+            
+            // 清除之前的搜索结果
+            placeSearch.clear();
+            
+            // 执行搜索
+            placeSearch.searchNearBy(keywords, [currentLocation.lng, currentLocation.lat], radius, function(status, result) {
+                if (status === 'complete' && result.poiList && result.poiList.pois.length > 0) {
+                    let pois = result.poiList.pois;
+                    
+                    // 如果有筛选，过滤结果
+                    if (currentFilter) {
+                        pois = pois.filter(poi => {
+                            const name = poi.name.toLowerCase();
+                            const type = poi.type || '';
+                            return type.includes(currentFilter) || 
+                                   (currentFilter === '餐饮服务' && !name.includes('快餐') && !name.includes('火锅')) ||
+                                   (currentFilter === '外国餐饮' && (name.includes('西餐') || name.includes('比萨') || name.includes('汉堡') || name.includes('日料') || name.includes('韩餐'))) ||
+                                   (currentFilter === '快餐服务' && (name.includes('快餐') || name.includes('汉堡') || name.includes('炸鸡') || name.includes('沙县'))) ||
+                                   (currentFilter === '火锅' && (name.includes('火锅') || name.includes('串串') || name.includes('麻辣烫')));
+                        });
+                    }
+                    
+                    // 按距离排序
+                    pois.sort((a, b) => {
+                        const distA = parseFloat(a.distance) || 0;
+                        const distB = parseFloat(b.distance) || 0;
+                        return distA - distB;
+                    });
+                    
+                    displayResults(pois);
+                } else {
+                    showError('未找到附近的餐厅，请尝试扩大搜索范围或更换位置');
+                }
+            });
+        }
+        
+        // 显示搜索结果
+        function displayResults(pois) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (pois.length === 0) {
+                resultsDiv.innerHTML = '<div class="empty"><p>没有找到符合条件的美食<br>换个位置试试？</p></div>';
+                return;
+            }
+            
+            let html = '';
+            
+            pois.forEach((poi, index) => {
+                const distance = (parseFloat(poi.distance) || 0) / 1000;
+                const rating = (Math.random() * 2 + 3).toFixed(1); // 模拟评分 3.0-5.0
+                const avgPrice = Math.floor(Math.random() * 80 + 20); // 模拟人均 20-100元
+                
+                html += `
+                    <div class="result-card" onclick="showOnMap(${poi.location.lng}, ${poi.location.lat}, '${poi.name.replace(/'/g, "\\'")}')">
+                        <div class="result-name">${index + 1}. ${poi.name}</div>
+                        <div class="result-info">
+                            <span style="color: #666;">📍 ${poi.address || '地址未知'}</span>
+                            <span class="rating">⭐ ${rating}</span>
+                            <span class="distance">🚶 ${distance.toFixed(2)} km</span>
+                            <span>💰 人均 ¥${avgPrice}</span>
+                            ${poi.type ? `<span>🏷️ ${poi.type}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+            
+            // 显示所有标记在地图上
+            pois.forEach(poi => {
+                if (poi.location) {
+                    new AMap.Marker({
+                        position: [poi.location.lng, poi.location.lat],
+                        map: map,
+                        title: poi.name
+                    });
+                }
+            });
+            
+            // 调整地图视野以显示所有结果
+            map.setFitView();
+        }
+        
+        // 在地图上显示位置
+        function showOnMap(lng, lat, name) {
+            if (map) {
+                map.setCenter([lng, lat]);
+                map.setZoom(17);
+                
+                // 显示信息窗体
+                const infoWindow = new AMap.InfoWindow({
+                    content: `
+                        <div style="padding: 10px;">
+                            <strong style="font-size: 16px;">${name}</strong><br>
+                            <a href="https://uri.amap.com/navigation?to=${lng},${lat},${encodeURIComponent(name)}&mode=car&coordinate=gaode&callnative=1" 
+                               target="_blank" 
+                               style="display: inline-block; margin-top: 8px; padding: 8px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 20px; font-size: 14px;">
+                                🧭 导航前往
+                            </a>
+                        </div>
+                    `,
+                    offset: new AMap.Pixel(0, -30)
+                });
+                
+                const marker = new AMap.Marker({
+                    position: [lng, lat],
+                    map: map
+                });
+                
+                infoWindow.open(map, marker.getPosition());
+            }
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="error">
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        // 筛选按钮点击事件
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有按钮的 active 类
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // 给当前按钮添加 active 类
+                this.classList.add('active');
+                // 更新当前筛选
+                currentFilter = this.dataset.type;
+                
+                // 如果已经有搜索结果，重新搜索
+                const results = document.querySelectorAll('.result-card');
+                if (results.length > 0) {
+                    searchRestaurants();
+                }
+            });
+        });
+        
+        // 页面加载完成后初始化
+        window.onload = function() {
+            // 检查浏览器是否支持 Geolocation
+            if ('geolocation' in navigator) {
+                // 请求位置权限
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        console.log('位置权限已获取');
+                    },
+                    function(error) {
+                        console.error('位置权限获取失败:', error);
+                    }
+                );
+            } else {
+                showError('您的浏览器不支持地理定位功能');
+            }
+            
+            // 加载高德地图
+            loadAMapScript(function() {
+                initMap();
+            });
+        };
+        
+        // 处理权限错误
+        function handlePermissionError(error) {
+            let message = '获取位置权限失败';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = '用户拒绝了位置权限请求';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = '位置信息不可用';
+                    break;
+                case error.TIMEOUT:
+                    message = '获取位置超时';
+                    break;
+                default:
+                    message = '未知错误';
+            }
+            
+            showError(message + '<br>请在浏览器设置中允许访问位置信息');
+        }
+    </script>
+</body>
+</html>
