@@ -46,6 +46,13 @@ body{min-height:100vh;background:radial-gradient(circle at 20% 10%,rgba(255,191,
 <div class="search-overlay" id="searchOverlay"><div class="search-header"><button class="back-btn icon-btn" type="button" id="closeSearchBtn">←</button><input type="text" class="search-input" id="searchInput" placeholder="搜索附近商家..."></div><div class="search-results" id="searchResults"></div></div>
 <div class="toast" id="toast"></div>
 
+<!-- 调试面板 -->
+<div id="debugPanel" style="position: fixed; bottom: 80px; left: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 10px; border-radius: 10px; font-size: 11px; z-index: 100; display: none; max-height: 200px; overflow-y: auto;">
+    <div style="font-weight: bold; margin-bottom: 5px;">定位调试信息:</div>
+    <div id="debugContent"></div>
+</div>
+<div id="debugToggle" style="position: fixed; bottom: 80px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 101; font-size: 18px;">?</div>
+
 <script>
 // 高德地图配置
 const AMAP_KEY = '901de9730905a2eb52b41dec8c2e3bb8';
@@ -59,6 +66,30 @@ window._AMapSecurityConfig = {
 let currentLocation = null;
 let allStores = [];
 let placeSearch = null;
+let debugLogs = [];
+
+// 调试日志函数
+function debugLog(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    const log = `[${timestamp}] ${message}`;
+    debugLogs.push(log);
+    console.log(log);
+    updateDebugPanel();
+}
+
+// 更新调试面板
+function updateDebugPanel() {
+    const debugContent = document.getElementById('debugContent');
+    if (debugContent) {
+        debugContent.innerHTML = debugLogs.slice(-10).join('<br>');
+    }
+}
+
+// 切换调试面板
+document.getElementById('debugToggle').onclick = () => {
+    const panel = document.getElementById('debugPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+};
 
 // 加载高德地图
 function loadAMapScript(callback) {
@@ -79,11 +110,13 @@ function loadAMapScript(callback) {
 
 // 初始化定位 - 使用浏览器原生定位获取更准确的位置
 function initLocation() {
+    debugLog('开始定位流程...');
     console.log('开始定位...');
     showToast('正在获取位置...');
     
     // 先使用浏览器原生定位API获取经纬度
     if (navigator.geolocation) {
+        debugLog('浏览器支持定位API，开始获取位置...');
         navigator.geolocation.getCurrentPosition(
             // 成功回调
             (position) => {
@@ -91,6 +124,7 @@ function initLocation() {
                 const lng = position.coords.longitude;
                 const accuracy = position.coords.accuracy;
                 
+                debugLog(`浏览器定位成功: 经度=${lng}, 纬度=${lat}, 精度=${accuracy}米`);
                 console.log('浏览器原生定位成功:', { lat, lng, accuracy });
                 
                 // 使用高德地图逆地理编码获取详细地址
@@ -100,6 +134,7 @@ function initLocation() {
                     });
                     
                     geocoder.getAddress([lng, lat], (status, result) => {
+                        debugLog(`逆地理编码结果: ${status}`);
                         if (status === 'complete' && result.regeocode) {
                             const addrComponents = result.regeocode.addressComponent || {};
                             const detailAddress = `${addrComponents.city || ''}${addrComponents.district || ''}${addrComponents.township || ''}`.replace(/上海市/, '');
@@ -113,9 +148,11 @@ function initLocation() {
                             // 更新显示
                             updateLocationDisplay(detailAddress);
                             
+                            debugLog(`最终定位: ${detailAddress}`);
                             console.log('逆地理编码成功:', currentLocation);
                             showToast('定位成功');
                         } else {
+                            debugLog(`逆地理编码失败: ${JSON.stringify(result)}`);
                             console.error('逆地理编码失败:', result);
                             // 逆地理编码失败，使用经纬度
                             currentLocation = {
@@ -134,12 +171,34 @@ function initLocation() {
             },
             // 失败回调
             (error) => {
+                debugLog(`浏览器定位失败: 代码=${error.code}, 信息=${error.message}`);
                 console.error('浏览器定位失败:', error);
+                
+                let errorMsg = '定位失败';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg = '定位权限被拒绝，请在浏览器设置中允许定位';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg = '无法获取位置信息';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg = '定位超时，请重试';
+                        break;
+                    default:
+                        errorMsg = '定位失败: ' + error.message;
+                }
+                
+                showToast(errorMsg);
                 
                 // 浏览器定位失败，尝试使用高德地图定位
                 if (window.AMap) {
+                    debugLog('尝试使用高德地图定位...');
+                    console.log('尝试使用高德地图定位...');
                     useAMapLocation();
                 } else {
+                    debugLog('高德地图未加载，使用默认位置');
+                    console.log('高德地图未加载，使用默认位置');
                     useDefaultLocation();
                 }
             },
@@ -162,6 +221,9 @@ function initLocation() {
 
 // 使用高德地图定位
 function useAMapLocation() {
+    debugLog('开始使用高德地图定位...');
+    console.log('使用高德地图定位...');
+    
     const geolocation = new AMap.Geolocation({
         enableHighAccuracy: true,
         timeout: 15000,
@@ -170,6 +232,9 @@ function useAMapLocation() {
     });
     
     geolocation.getCurrentPosition((status, result) => {
+        debugLog(`高德地图定位结果: ${status}`);
+        console.log('高德地图定位结果:', status, result);
+        
         if (status === 'complete') {
             const addrComponents = result.addressComponent || {};
             const detailAddress = `${addrComponents.city || ''}${addrComponents.district || ''}${addrComponents.township || ''}`.replace(/上海市/, '');
@@ -187,6 +252,18 @@ function useAMapLocation() {
             searchNearbyStores();
         } else {
             console.error('高德地图定位失败:', result);
+            console.error('错误代码:', result.code);
+            
+            let errorMsg = '高德地图定位失败';
+            if (result.code === 1) {
+                errorMsg = '高德地图定位权限被拒绝';
+            } else if (result.code === 2) {
+                errorMsg = '高德地图定位失败，位置信息不可用';
+            } else if (result.code === 3) {
+                errorMsg = '高德地图定位超时';
+            }
+            
+            showToast(errorMsg);
             useDefaultLocation();
         }
     });
@@ -194,16 +271,17 @@ function useAMapLocation() {
 
 // 使用默认位置
 function useDefaultLocation() {
-    console.log('使用默认位置');
-    showToast('定位失败，使用默认位置');
+    debugLog('使用默认位置（深圳市南山区）');
+    console.log('使用默认位置（深圳）');
+    showToast('定位失败，使用深圳默认位置');
     
     currentLocation = {
-        lng: 121.4737,
-        lat: 31.2304,
-        address: '上海市黄浦区'
+        lng: 114.0579,
+        lat: 22.5431,
+        address: '深圳市南山区'
     };
     
-    updateLocationDisplay('上海市黄浦区');
+    updateLocationDisplay('深圳市南山区');
     searchNearbyStores();
 }
 
