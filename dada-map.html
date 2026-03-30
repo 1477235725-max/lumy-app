@@ -1,639 +1,142 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>今天吃什么</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            animation: bounce 2s ease-in-out infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-        
-        .map-section {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .map-section h2 {
-            font-size: 1.3em;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .map-section h2::before {
-            content: "📍";
-        }
-        
-        #map {
-            width: 100%;
-            height: 300px;
-            border-radius: 15px;
-            background: #f5f5f5;
-        }
-        
-        .location-info {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            font-size: 0.95em;
-            color: #555;
-        }
-        
-        .location-info strong {
-            color: #667eea;
-        }
-        
-        .filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        
-        .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            flex: 1 1 auto;
-            min-width: 120px;
-        }
-        
-        .filter-btn:hover, .filter-btn.active {
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-        
-        .search-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.3em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
-            margin-bottom: 20px;
-        }
-        
-        .search-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
-        }
-        
-        .search-btn:active {
-            transform: translateY(-1px);
-        }
-        
-        .results {
-            display: grid;
-            gap: 15px;
-        }
-        
-        .result-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .result-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .result-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        .result-name {
-            font-size: 1.4em;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .result-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            color: #666;
-            font-size: 0.95em;
-        }
-        
-        .result-info span {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .result-info span::before {
-            font-size: 1.1em;
-        }
-        
-        .rating {
-            color: #ff9800;
-            font-weight: 600;
-        }
-        
-        .distance {
-            color: #667eea;
-            font-weight: 600;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-            font-size: 1.2em;
-        }
-        
-        .loading::after {
-            content: "🔍";
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .error {
-            background: #ff6b6b;
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
-        }
-        
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: white;
-            font-size: 1.1em;
-        }
-        
-        .empty::before {
-            content: "🍽️";
-            font-size: 3em;
-            display: block;
-            margin-bottom: 15px;
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            #map {
-                height: 250px;
-            }
-            
-            .result-name {
-                font-size: 1.2em;
-            }
-            
-            .filter-btn {
-                padding: 8px 15px;
-                font-size: 0.9em;
-                min-width: 100px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>今天吃什么 - 小程序原型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei","PingFang SC",sans-serif}
+:root{--pink:#ff84b6;--pink-dark:#ff5c99;--mint:#93e6d9;--mint-dark:#48c6b0;--yellow:#ffe79a;--peach:#fff2df;--bg:#fffafc;--card:rgba(255,255,255,.92);--text:#56486a;--text-strong:#342a45;--muted:#9387a5;--line:#f3d9e7;--shadow:0 16px 36px rgba(255,132,182,.14);--pill:999px;--round:24px;--safe-top:max(18px,env(safe-area-inset-top));--safe-bottom:max(18px,env(safe-area-inset-bottom))}
+body{min-height:100vh;background:radial-gradient(circle at 20% 10%,rgba(255,191,220,.8),transparent 24%),radial-gradient(circle at 88% 16%,rgba(147,230,217,.55),transparent 22%),radial-gradient(circle at 50% 88%,rgba(255,231,154,.5),transparent 24%),linear-gradient(180deg,#fffafd 0%,#fff7fb 48%,#fffdf8 100%);display:grid;place-items:center;padding:18px;color:var(--text)}
+.app{width:min(100%,430px);height:min(920px,100vh - 20px);background:linear-gradient(180deg,rgba(255,255,255,.68),rgba(255,255,255,.88));border:1px solid rgba(255,255,255,.9);border-radius:38px;overflow:hidden;position:relative;box-shadow:0 30px 60px rgba(164,118,145,.18)}
+.screen{height:100%;overflow:auto;padding:var(--safe-top) 16px calc(92px + var(--safe-bottom));scrollbar-width:none}.screen::-webkit-scrollbar{display:none}
+.status{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--text-strong);margin-bottom:14px}.status-icons{display:flex;align-items:center;gap:6px}.dot{width:6px;height:6px;border-radius:50%;background:var(--text-strong);opacity:.7}.battery{width:18px;height:10px;border:1.8px solid var(--text-strong);border-radius:3px;position:relative}.battery:after{content:"";position:absolute;right:-4px;top:2px;width:2px;height:4px;border-radius:1px;background:var(--text-strong)}
+.page{display:none}.page.active{display:block}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:10px}.avatar{width:46px;height:46px;border-radius:18px;background:linear-gradient(135deg,var(--pink-dark),var(--pink));display:grid;place-items:center;color:#fff;font-size:24px;box-shadow:0 12px 22px rgba(255,92,153,.24)}.brand-copy strong{display:block;font-size:22px;color:var(--text-strong)}.brand-copy span{font-size:12px;color:var(--muted)}.search-btn,.icon-btn,.back-btn{border:none;cursor:pointer;background:var(--card);box-shadow:var(--shadow)}.search-btn{margin-left:auto;width:44px;height:44px;border-radius:18px;font-size:18px}
+.card{background:var(--card);border:1px solid rgba(255,255,255,.9);border-radius:var(--round);box-shadow:var(--shadow)}
+.hero{padding:22px;position:relative;overflow:hidden}.hero:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(147,230,217,.24);top:-80px;right:-60px}.hero:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;background:rgba(255,132,182,.18);bottom:-60px;left:-30px}.tiny-pill,.filter-chip,.chip,.meta-chip,.result-badge{border-radius:var(--pill)}.tiny-pill{display:inline-flex;padding:8px 12px;background:rgba(255,132,182,.12);color:var(--pink-dark);font-size:12px;font-weight:800;position:relative;z-index:1}.hero h1{position:relative;z-index:1;margin-top:14px;font-size:34px;line-height:1.08;color:var(--text-strong)}.hero p{position:relative;z-index:1;margin-top:10px;font-size:14px;line-height:1.7;color:#7e728f}.hero-actions{position:relative;z-index:1;display:flex;gap:10px;margin-top:18px}.btn{border:none;border-radius:var(--pill);padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer}.btn-primary{flex:1;background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff;box-shadow:0 14px 24px rgba(255,92,153,.22)}.btn-secondary{flex:1;background:#fff;color:var(--mint-dark);box-shadow:0 14px 20px rgba(147,230,217,.2)}.stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.stat{padding:12px;border-radius:18px;background:rgba(255,255,255,.78)}.stat strong{display:block;font-size:20px;color:var(--text-strong)}.stat span{font-size:11px;color:var(--muted);line-height:1.4}
+.section{margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.section-head h3{font-size:18px;color:var(--text-strong)}.section-head span{font-size:12px;color:var(--pink-dark);font-weight:800}.scroll-x{display:flex;gap:10px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.scroll-x::-webkit-scrollbar{display:none}
+.quick-card{min-width:138px;padding:14px;border-radius:22px;color:#fff;box-shadow:var(--shadow);cursor:pointer}.quick-card strong{display:block;font-size:15px;margin-bottom:6px}.quick-card span{font-size:11px;line-height:1.5;opacity:.94}.bg-pink{background:linear-gradient(135deg,var(--pink-dark),#ffa8ce)}.bg-mint{background:linear-gradient(135deg,#57d8bf,#a2f1e4)}.bg-yellow{background:linear-gradient(135deg,#ffbf4b,#ffd977);color:#6a5200}.bg-purple{background:linear-gradient(135deg,#8c72ff,#c3b6ff)}
+.chips{display:flex;gap:8px;overflow:auto;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chip{padding:9px 14px;font-size:12px;font-weight:800;color:#fff;white-space:nowrap}.chip.pink{background:linear-gradient(135deg,var(--pink-dark),#ff9bc8)}.chip.mint{background:linear-gradient(135deg,#56d3bb,#9feee1)}.chip.yellow{background:linear-gradient(135deg,#ffbf4a,#ffd977);color:#6a5200}.chip.purple{background:linear-gradient(135deg,#8c72ff,#c0b2ff)}
+.map-card{padding:16px}.map-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}.map-head p{font-size:12px;line-height:1.6;color:var(--muted)}.mini-pill{padding:8px 12px;border-radius:var(--pill);background:#fff;font-size:11px;font-weight:800;color:var(--pink-dark)}.map-box{position:relative;height:420px;border-radius:26px;overflow:hidden;background:radial-gradient(circle at 22% 18%,rgba(255,198,224,.92),transparent 18%),radial-gradient(circle at 78% 14%,rgba(175,244,234,.88),transparent 18%),radial-gradient(circle at 76% 80%,rgba(255,233,165,.76),transparent 18%),linear-gradient(180deg,#fff7fb,#fffdfa);border:1px solid rgba(255,255,255,.9)}.wave,.roads,.glow{position:absolute;inset:0;pointer-events:none}.wave:before,.wave:after,.roads:before,.roads:after,.glow:before,.glow:after{content:"";position:absolute;border-radius:999px}.wave:before{width:220px;height:100px;left:-20px;top:50px;background:rgba(255,214,224,.82);transform:rotate(-8deg)}.wave:after{width:220px;height:100px;right:-30px;top:120px;background:rgba(230,247,244,.92);transform:rotate(12deg)}.roads:before{width:360px;height:18px;top:176px;left:22px;background:linear-gradient(90deg,rgba(255,132,182,.16),rgba(139,217,255,.24));transform:rotate(-10deg)}.roads:after{width:280px;height:16px;left:80px;bottom:120px;background:linear-gradient(90deg,rgba(147,230,217,.22),rgba(255,231,154,.2));transform:rotate(16deg)}.glow:before{width:120px;height:60px;left:32px;top:76px;background:rgba(255,255,255,.24)}.glow:after{width:110px;height:54px;right:38px;bottom:72px;background:rgba(255,255,255,.24)}
+.hotspot{position:absolute;width:160px;padding:14px;border-radius:24px;background:rgba(255,255,255,.9);box-shadow:0 18px 30px rgba(255,132,182,.14);border:1px solid rgba(255,255,255,.9);cursor:pointer}.hotspot:before{content:"";position:absolute;inset:-8px;border:2px dashed rgba(255,255,255,.6);border-radius:30px}.hotspot-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.icon{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 10px 18px rgba(0,0,0,.08)}.badge-sm{padding:6px 10px;border-radius:var(--pill);color:#fff;font-size:10px;font-weight:800}.hotspot h4{margin-top:10px;font-size:18px;color:var(--text-strong)}.hotspot p{margin-top:6px;font-size:11px;line-height:1.6;color:#857a96}.meta{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}.meta span{font-size:10px;font-weight:800;color:#f79b3f}.go{border:none;background:#fff;border-radius:var(--pill);padding:8px 10px;color:var(--pink-dark);font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 8px 14px rgba(255,132,182,.12)}.s1{top:28px;left:22px}.s2{top:34px;right:20px}.s3{top:166px;left:122px}.s4{bottom:150px;left:22px}.s5{bottom:146px;right:18px}.s6{bottom:268px;right:92px}
+.float-stack{position:absolute;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--pill);background:rgba(255,255,255,.92);font-size:11px;font-weight:800;color:#7d7190;box-shadow:0 12px 20px rgba(147,230,217,.16)}.float-stack i{width:24px;height:24px;margin-left:-6px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;color:#fff;font-style:normal;font-size:11px;background:linear-gradient(135deg,var(--pink),#c7b6ff)}.float-stack i:first-child{margin-left:0}.fstack1{top:12px;left:132px}.fstack2{top:132px;right:10px}.fstack3{bottom:14px;left:120px}
+.list-card{padding:14px;display:grid;gap:12px}.food-item{display:flex;gap:12px;padding:12px;border-radius:20px;background:var(--card)}.food-cover{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:28px;flex-shrink:0}.food-copy{flex:1}.food-copy strong{display:block;color:var(--text-strong);font-size:15px}.food-copy p{margin-top:4px;font-size:12px;color:var(--muted);line-height:1.5}.food-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.meta-chip{padding:6px 10px;background:var(--peach);font-size:11px;font-weight:800;color:#8e7293}.food-actions{display:flex;gap:8px;margin-top:10px}.mini-btn{flex:1;border:none;padding:9px 10px;border-radius:var(--pill);font-size:12px;font-weight:800;cursor:pointer}.mini-primary{background:linear-gradient(135deg,var(--pink-dark),var(--pink));color:#fff}.mini-ghost{background:#fff;color:var(--mint-dark)}
+.team-card{padding:16px}.members{display:flex;gap:10px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.members::-webkit-scrollbar{display:none}.member{min-width:112px;padding:12px;border-radius:20px;background:var(--card);text-align:center}.member-avatar{width:42px;height:42px;border-radius:16px;margin:0 auto 8px;display:grid;place-items:center;color:#fff;font-weight:800}.member strong{display:block;color:var(--text-strong);font-size:14px}.member span{font-size:11px;color:var(--muted)}.vote-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}.vote-item{padding:12px;border-radius:18px;background:#fff}.vote-item strong{display:block;color:var(--text-strong);font-size:13px}.vote-item span{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+.record-item{padding:12px 14px;border-radius:18px;background:var(--card);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.record-item strong{display:block;color:var(--text-strong);font-size:14px}.record-item p{margin-top:4px;font-size:11px;line-height:1.5;color:var(--muted)}.record-score{padding:7px 10px;border-radius:var(--pill);background:var(--peach);font-size:11px;font-weight:800;color:#ae7d00}
+.result-overlay{position:fixed;inset:0;background:rgba(43,28,60,.46);display:none;align-items:flex-end;justify-content:center;padding:18px;z-index:20}.result-overlay.show{display:flex}.result-sheet{width:min(100%,430px);background:linear-gradient(180deg,#fffdfd,#fff8fc);border-radius:30px 30px 22px 22px;padding:18px;box-shadow:0 24px 50px rgba(52,34,73,.25)}.drag{width:56px;height:6px;border-radius:999px;background:#ead7e3;margin:0 auto 14px}.result-badge{display:inline-flex;padding:8px 12px;background:rgba(255,132,182,.12);color:var(--pink-dark);font-size:12px;font-weight:800}.result-card{margin-top:14px;padding:16px;border-radius:24px;background:#fff;box-shadow:var(--shadow)}.result-cover{height:140px;border-radius:20px;display:grid;place-items:center;font-size:60px}.result-card h3{margin-top:14px;font-size:24px;color:var(--text-strong)}.result-card p{margin-top:8px;font-size:13px;line-height:1.7;color:#7f738f}.result-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.result-actions{display:flex;gap:10px;margin-top:16px}.result-actions button{flex:1}
+.bottom-nav{position:absolute;left:14px;right:14px;bottom:calc(10px + var(--safe-bottom));padding:12px 10px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.9);box-shadow:0 18px 30px rgba(161,115,148,.14);border-radius:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.nav-item{display:grid;justify-items:center;gap:4px;font-size:11px;color:#9a8fab;font-weight:700;cursor:pointer}.nav-item i{font-style:normal;font-size:18px}.nav-item.active{color:var(--pink-dark)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);padding:12px 16px;border-radius:16px;background:rgba(63,52,80,.92);color:#fff;font-size:13px;box-shadow:0 18px 30px rgba(63,52,80,.24);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:30}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:480px){body{padding:0}.app{width:100%;height:100vh;border-radius:0}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🍜 今天吃什么？</h1>
-            <p>基于您当前位置的美食推荐</p>
-        </div>
-        
-        <div class="map-section">
-            <h2>我的位置</h2>
-            <div id="map"></div>
-            <div class="location-info" id="locationInfo">
-                <strong>正在获取位置...</strong>
-            </div>
-        </div>
-        
-        <div class="filters">
-            <button class="filter-btn active" data-type="">全部</button>
-            <button class="filter-btn" data-type="餐饮服务">中餐</button>
-            <button class="filter-btn" data-type="外国餐饮">西餐</button>
-            <button class="filter-btn" data-type="快餐服务">快餐</button>
-            <button class="filter-btn" data-type="火锅">火锅</button>
-        </div>
-        
-        <button class="search-btn" onclick="searchRestaurants()">
-            🎯 搜索附近美食
-        </button>
-        
-        <div id="results" class="results">
-            <div class="empty">
-                <p>点击上方按钮开始搜索<br>1.5km 范围内的美食</p>
-            </div>
-        </div>
-    </div>
+<div class="app">
+<div class="screen">
+<div class="status"><span>9:41</span><div class="status-icons"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="battery"></div></div></div>
+<section class="page active" id="page-home"><div class="topbar"><div class="brand"><div class="avatar">🍽️</div><div class="brand-copy"><strong>今天吃什么</strong><span>1.5km 内帮大家快速决定</span></div></div><button class="search-btn" type="button" data-action="search">🔍</button></div><div class="hero card"><div class="tiny-pill">✨ 附近 68 家可选</div><h1>纠结吃什么？<br>我来帮你们选</h1><p>支持多人一起用，覆盖附近 1.5km 的正餐和下午茶。点一下就能随机出一家，也可以先看看地图和附近推荐。</p><div class="hero-actions"><button class="btn btn-primary" id="pickNow">帮我们选一家</button><button class="btn btn-secondary" data-action="quick-map">先看看附近</button></div><div class="stats"><div class="stat"><strong>4人</strong><span>正在一起选</span></div><div class="stat"><strong>1.5km</strong><span>附近都能看</span></div><div class="stat"><strong>下午茶+正餐</strong><span>一起随机</span></div></div></div><div class="section"><div class="section-head"><h3>快捷入口</h3><span>越纠结越适合点</span></div><div class="scroll-x"><div class="quick-card bg-pink" data-pick="all"><strong>今天吃什么</strong><span>不筛选，直接随机抽一家</span></div><div class="quick-card bg-mint" data-filter="dessert"><strong>来点下午茶</strong><span>奶茶、甜品、咖啡优先</span></div><div class="quick-card bg-purple" data-action="open-team"><strong>一起投票决定</strong><span>让朋友一起选更快</span></div><div class="quick-card bg-yellow" data-filter="meal"><strong>想吃正餐</strong><span>米饭、面食、火锅都可以</span></div></div></div><div class="section map-card card"><div class="map-head"><div><h3>附近美食地图</h3><p>绿色偏下午茶，粉色偏正餐，点地图热点可以直接看详情。</p></div><div class="mini-pill" id="locationText">正在定位...</div></div><div class="map-box"><div class="wave"></div><div class="roads"></div><div class="glow"></div><div class="float-stack fstack1"><i>A</i><i>B</i><i>C</i>好友正在甜品局</div><div class="float-stack fstack2"><i>D</i><i>E</i>这家今天人气高</div><div class="float-stack fstack3"><i>F</i><i>G</i><i>H</i>正餐局缺你们</div><article class="hotspot s1" data-store="桃桃轻食碗"><div class="hotspot-top"><div class="icon pink">🥗</div><div class="badge-sm pink">正餐</div></div><h4>桃桃轻食碗</h4><p>适合 3-4 人，口味稳，距离近。</p><div class="meta"><span>680m · 人均42</span><button class="go" type="button">详情</button></div></article><article class="hotspot s2" data-store="乌龙奶盖研究所"><div class="hotspot-top"><div class="icon mint">🧋</div><div class="badge-sm mint">下午茶</div></div><h4>乌龙奶盖研究所</h4><p>奶茶和小蛋糕都很适合边聊边坐。</p><div class="meta"><span>420m · 人均22</span><button class="go" type="button">详情</button></div></article><article class="hotspot s3" data-store="热辣小馆"><div class="hotspot-top"><div class="icon yellow">🍜</div><div class="badge-sm yellow">正餐</div></div><h4>热辣小馆</h4><p>想吃热乎一点的时候，这家命中率很高。</p><div class="meta"><span>910m · 人均38</span><button class="go" type="button">详情</button></div></article><article class="hotspot s4" data-store="发发烧烤屋"><div class="hotspot-top"><div class="icon purple">🍢</div><div class="badge-sm purple">夜宵</div></div><h4>发发烧烤屋</h4><p>适合晚上聚餐，热闹型选手很喜欢。</p><div class="meta"><span>1.2km · 人均56</span><button class="go" type="button">详情</button></div></article><article class="hotspot s5" data-store="云朵咖啡馆"><div class="hotspot-top"><div class="icon sky">☕</div><div class="badge-sm sky">下午茶</div></div><h4>云朵咖啡馆</h4><p>环境舒服，适合聊天、发呆和开会。</p><div class="meta"><span>530m · 人均31</span><button class="go" type="button">详情</button></div></article><article class="hotspot s6" data-store="小桃饭堂"><div class="hotspot-top"><div class="icon pink">🍱</div><div class="badge-sm pink">多人推荐</div></div><h4>小桃饭堂</h4><p>离你们近，适合多人，不容易踩雷。</p><div class="meta"><span>760m · 人均48</span><button class="go" type="button">详情</button></div></article></div></div><div class="section"><div class="section-head"><h3>今天可以试试这些</h3><span id="refreshList">换一批</span></div><div class="list-card" id="homeRecommendList"></div></div></section>
+<section class="page" id="page-nearby"><div class="topbar"><button class="back-btn icon-btn" type="button" data-back="home">←</button><div class="brand-copy"><strong>附近推荐</strong><span>1.5km 内正餐 + 下午茶</span></div></div><div class="section-head"><h3>筛选条件</h3><span id="resetFilters">重置</span></div><div class="chips" id="filters"><div class="chip pink active-filter" data-kind="all">全部</div><div class="chip mint" data-kind="dessert">下午茶</div><div class="chip yellow" data-kind="meal">正餐</div><div class="chip purple" data-budget="50">人均50内</div></div><div class="section"><div class="section-head"><h3>附近店铺</h3><span id="nearbyCount"></span></div><div class="list-card" id="nearbyList"></div></div></section>
+<section class="page" id="page-team"><div class="topbar"><button class="back-btn icon-btn" type="button" data-back="home">←</button><div class="brand-copy"><strong>一起选</strong><span>让大家一起决定更快</span></div></div><div class="team-card card"><div class="section-head"><h3>今天一起吃</h3><span>4 人已加入</span></div><div class="members"><div class="member"><div class="member-avatar bg-pink">A</div><strong>阿梨</strong><span>想吃下午茶</span></div><div class="member"><div class="member-avatar bg-mint">B</div><strong>小周</strong><span>预算 50 内</span></div><div class="member"><div class="member-avatar bg-yellow">C</div><strong>圆圆</strong><span>不吃辣</span></div><div class="member"><div class="member-avatar bg-purple">D</div><strong>阿杰</strong><span>想吃正餐</span></div></div><div class="vote-grid"><div class="vote-item"><strong>当前共识</strong><span>距离近、适合多人、预算别太高</span></div><div class="vote-item"><strong>当前排除</strong><span>太辣、太远、太贵</span></div></div><div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" id="teamPick">帮我们一起选</button><button class="btn btn-secondary" data-action="invite">邀请朋友</button></div></div></section>
+<section class="page" id="page-record"><div class="topbar"><button class="back-btn icon-btn" type="button" data-back="home">←</button><div class="brand-copy"><strong>吃过记录</strong><span>下次不想重复吃也可以参考</span></div></div><div class="section"><div class="section-head"><h3>本周统计</h3><span>持续更新</span></div><div class="stats"><div class="stat"><strong>4次</strong><span>本周一起吃饭</span></div><div class="stat"><strong>3家</strong><span>解锁新店</span></div><div class="stat"><strong>奶茶</strong><span>最近最爱</span></div></div></div><div class="section"><div class="section-head"><h3>最近吃过</h3><span>按时间排序</span></div><div class="list-card"><div class="record-item"><div><strong>小桃饭堂</strong><p>3月30日 · 和阿梨、小周一起 · 人均48</p></div><div class="record-score">满意度 4.5</div></div><div class="record-item"><div><strong>乌龙奶盖研究所</strong><p>3月29日 · 下午茶局 · 人均22</p></div><div class="record-score">满意度 4.8</div></div><div class="record-item"><div><strong>热辣小馆</strong><p>3月27日 · 晚饭 · 人均38</p></div><div class="record-score">满意度 4.2</div></div></div></div></section>
 
-    <script>
-        // 高德地图配置
-        const AMAP_KEY = '901de9730905a2eb52b41dec8c2e3bb8';
-        const AMAP_SECRET = '063cf87996ade55d605da015f4a36c0a';
-        
-        // 设置安全密钥
-        window._AMapSecurityConfig = {
-            securityJsCode: AMAP_SECRET,
-        }
-        
-        // 加载高德地图
-        function loadAMapScript(callback) {
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}&plugin=AMap.Geolocation,AMap.PlaceSearch,AMap.Marker`;
-            script.onload = callback;
-            script.onerror = () => {
-                showError('地图加载失败，请检查网络连接');
+</div>
+<nav class="bottom-nav"><div class="nav-item active" data-page="home"><i>🏠</i><span>吃啥</span></div><div class="nav-item" data-page="nearby"><i>🗺️</i><span>附近</span></div><div class="nav-item" data-page="team"><i>👫</i><span>一起选</span></div><div class="nav-item" data-page="record"><i>📝</i><span>记录</span></div></nav>
+</div>
+<div class="result-overlay" id="resultOverlay"><div class="result-sheet"><div class="drag"></div><div class="result-badge">帮你们选好了</div><div class="result-card"><div class="result-cover" id="resultEmoji">🍱</div><h3 id="resultName">小桃饭堂</h3><p id="resultDesc">离你们近，适合多人，不容易踩雷。</p><div class="result-meta" id="resultMeta"></div><div class="result-actions"><button class="btn btn-primary" id="confirmPick">就吃这家</button><button class="btn btn-secondary" id="rerollPick">换一家</button></div></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// 高德地图配置
+const AMAP_KEY = '901de9730905a2eb52b41dec8c2e3bb8';
+const AMAP_SECRET = '063cf87996ade55d605da015f4a36c0a';
+
+// 设置安全密钥
+window._AMapSecurityConfig = {
+    securityJsCode: AMAP_SECRET,
+}
+
+// 加载高德地图
+function loadAMapScript(callback) {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}&plugin=AMap.Geolocation,AMap.PlaceSearch`;
+    script.onload = callback;
+    document.body.appendChild(script);
+}
+
+let currentLocation = null;
+
+// 初始化定位
+function initLocation() {
+    if (!window.AMap) return;
+    
+    const geolocation = new AMap.Geolocation({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        zoomToAccuracy: true
+    });
+    
+    geolocation.getCurrentPosition((status, result) => {
+        if (status === 'complete') {
+            currentLocation = {
+                lng: result.position.lng,
+                lat: result.position.lat,
+                address: result.formattedAddress || result.addressComponent.city || '当前位置'
             };
-            document.body.appendChild(script);
-        }
-        
-        let map = null;
-        let geolocation = null;
-        let placeSearch = null;
-        let currentLocation = null;
-        let currentFilter = '';
-        
-        // 初始化地图
-        function initMap() {
-            if (!window.AMap) {
-                showError('高德地图 SDK 未加载');
-                return;
+            
+            const locationText = document.getElementById('locationText');
+            if (locationText) {
+                locationText.textContent = `${result.addressComponent.city || ''} · 1.5km`;
             }
             
-            try {
-                // 创建地图实例
-                map = new AMap.Map('map', {
-                    zoom: 15,
-                    center: [116.397428, 39.90923], // 默认中心点（北京）
-                    viewMode: '2D',
-                    resizeEnable: true
-                });
-                
-                // 配置定位插件
-                const geolocationOptions = {
-                    enableHighAccuracy: true, // 是否使用高精度定位，默认:true
-                    timeout: 10000, // 超过10秒后停止定位，默认：5s
-                    position: 'RB', // 定位按钮的停靠位置
-                    offset: [10, 20], // 定位按钮与设置的停靠位置的偏移量
-                    zoomToAccuracy: true, // 定位成功后是否自动调整地图视野到定位点
-                };
-                
-                geolocation = new AMap.Geolocation(geolocationOptions);
-                map.addControl(geolocation);
-                
-                // 获取当前位置
-                geolocation.getCurrentPosition((status, result) => {
-                    if (status === 'complete') {
-                        currentLocation = {
-                            lng: result.position.lng,
-                            lat: result.position.lat,
-                            address: result.formattedAddress || result.addressComponent.city || '当前位置'
-                        };
-                        
-                        // 更新地图中心
-                        map.setCenter([currentLocation.lng, currentLocation.lat]);
-                        
-                        // 添加当前位置标记
-                        new AMap.Marker({
-                            position: [currentLocation.lng, currentLocation.lat],
-                            map: map,
-                            title: '我的位置',
-                            animation: 'AMAP_ANIMATION_DROP'
-                        });
-                        
-                        // 更新位置信息
-                        document.getElementById('locationInfo').innerHTML = `
-                            <strong>📍 ${currentLocation.address}</strong><br>
-                            <span style="color: #888; font-size: 0.9em;">经度: ${currentLocation.lng.toFixed(6)}, 纬度: ${currentLocation.lat.toFixed(6)}</span>
-                        `;
-                        
-                        console.log('定位成功:', currentLocation);
-                    } else {
-                        console.error('定位失败:', result);
-                        showError('定位失败：' + result.message + '<br>请允许浏览器访问您的位置信息');
-                    }
-                });
-                
-                // 初始化搜索插件
-                placeSearch = new AMap.PlaceSearch({
-                    type: '', // 兴趣点类别
-                    pageSize: 20, // 每页显示结果数
-                    pageIndex: 1, // 起始页码
-                    city: '', // 兴趣点所在城市
-                    citylimit: true, // 是否强制限制在设置的城市内搜索
-                    map: map, // 展现结果的地图实例
-                    panel: null, // 结果列表将在此容器中进行展示
-                    autoFitView: true, // 是否自动调整地图视野使绘制的 Marker点都处于视口的可见范围
-                    children: 1, // 是否展示子节点
-                    extensions: 'all' // 返回详细信息
-                });
-                
-                console.log('地图初始化完成');
-            } catch (error) {
-                console.error('地图初始化错误:', error);
-                showError('地图初始化失败：' + error.message);
+            console.log('定位成功:', currentLocation);
+        } else {
+            console.error('定位失败:', result);
+            const locationText = document.getElementById('locationText');
+            if (locationText) {
+                locationText.textContent = '定位失败';
             }
         }
-        
-        // 搜索餐厅
-        function searchRestaurants() {
-            if (!currentLocation) {
-                showError('请先允许获取您的位置信息');
-                return;
-            }
-            
-            if (!placeSearch) {
-                showError('搜索功能未初始化');
-                return;
-            }
-            
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<div class="loading">正在搜索附近美食...</div>';
-            
-            // 搜索关键词
-            const keywords = '餐厅|美食|饭店|小吃|火锅|烧烤|快餐';
-            
-            // 搜索半径：1.5km = 1500m
-            const radius = 1500;
-            
-            // 清除之前的搜索结果
-            placeSearch.clear();
-            
-            // 执行搜索
-            placeSearch.searchNearBy(keywords, [currentLocation.lng, currentLocation.lat], radius, function(status, result) {
-                if (status === 'complete' && result.poiList && result.poiList.pois.length > 0) {
-                    let pois = result.poiList.pois;
-                    
-                    // 如果有筛选，过滤结果
-                    if (currentFilter) {
-                        pois = pois.filter(poi => {
-                            const name = poi.name.toLowerCase();
-                            const type = poi.type || '';
-                            return type.includes(currentFilter) || 
-                                   (currentFilter === '餐饮服务' && !name.includes('快餐') && !name.includes('火锅')) ||
-                                   (currentFilter === '外国餐饮' && (name.includes('西餐') || name.includes('比萨') || name.includes('汉堡') || name.includes('日料') || name.includes('韩餐'))) ||
-                                   (currentFilter === '快餐服务' && (name.includes('快餐') || name.includes('汉堡') || name.includes('炸鸡') || name.includes('沙县'))) ||
-                                   (currentFilter === '火锅' && (name.includes('火锅') || name.includes('串串') || name.includes('麻辣烫')));
-                        });
-                    }
-                    
-                    // 按距离排序
-                    pois.sort((a, b) => {
-                        const distA = parseFloat(a.distance) || 0;
-                        const distB = parseFloat(b.distance) || 0;
-                        return distA - distB;
-                    });
-                    
-                    displayResults(pois);
-                } else {
-                    showError('未找到附近的餐厅，请尝试扩大搜索范围或更换位置');
-                }
-            });
-        }
-        
-        // 显示搜索结果
-        function displayResults(pois) {
-            const resultsDiv = document.getElementById('results');
-            
-            if (pois.length === 0) {
-                resultsDiv.innerHTML = '<div class="empty"><p>没有找到符合条件的美食<br>换个位置试试？</p></div>';
-                return;
-            }
-            
-            let html = '';
-            
-            pois.forEach((poi, index) => {
-                const distance = (parseFloat(poi.distance) || 0) / 1000;
-                const rating = (Math.random() * 2 + 3).toFixed(1); // 模拟评分 3.0-5.0
-                const avgPrice = Math.floor(Math.random() * 80 + 20); // 模拟人均 20-100元
-                
-                html += `
-                    <div class="result-card" onclick="showOnMap(${poi.location.lng}, ${poi.location.lat}, '${poi.name.replace(/'/g, "\\'")}')">
-                        <div class="result-name">${index + 1}. ${poi.name}</div>
-                        <div class="result-info">
-                            <span style="color: #666;">📍 ${poi.address || '地址未知'}</span>
-                            <span class="rating">⭐ ${rating}</span>
-                            <span class="distance">🚶 ${distance.toFixed(2)} km</span>
-                            <span>💰 人均 ¥${avgPrice}</span>
-                            ${poi.type ? `<span>🏷️ ${poi.type}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            resultsDiv.innerHTML = html;
-            
-            // 显示所有标记在地图上
-            pois.forEach(poi => {
-                if (poi.location) {
-                    new AMap.Marker({
-                        position: [poi.location.lng, poi.location.lat],
-                        map: map,
-                        title: poi.name
-                    });
-                }
-            });
-            
-            // 调整地图视野以显示所有结果
-            map.setFitView();
-        }
-        
-        // 在地图上显示位置
-        function showOnMap(lng, lat, name) {
-            if (map) {
-                map.setCenter([lng, lat]);
-                map.setZoom(17);
-                
-                // 显示信息窗体
-                const infoWindow = new AMap.InfoWindow({
-                    content: `
-                        <div style="padding: 10px;">
-                            <strong style="font-size: 16px;">${name}</strong><br>
-                            <a href="https://uri.amap.com/navigation?to=${lng},${lat},${encodeURIComponent(name)}&mode=car&coordinate=gaode&callnative=1" 
-                               target="_blank" 
-                               style="display: inline-block; margin-top: 8px; padding: 8px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 20px; font-size: 14px;">
-                                🧭 导航前往
-                            </a>
-                        </div>
-                    `,
-                    offset: new AMap.Pixel(0, -30)
-                });
-                
-                const marker = new AMap.Marker({
-                    position: [lng, lat],
-                    map: map
-                });
-                
-                infoWindow.open(map, marker.getPosition());
-            }
-        }
-        
-        // 显示错误信息
-        function showError(message) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `
-                <div class="error">
-                    <p>${message}</p>
-                </div>
-            `;
-        }
-        
-        // 筛选按钮点击事件
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 移除所有按钮的 active 类
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                // 给当前按钮添加 active 类
-                this.classList.add('active');
-                // 更新当前筛选
-                currentFilter = this.dataset.type;
-                
-                // 如果已经有搜索结果，重新搜索
-                const results = document.querySelectorAll('.result-card');
-                if (results.length > 0) {
-                    searchRestaurants();
-                }
-            });
-        });
-        
-        // 页面加载完成后初始化
-        window.onload = function() {
-            // 检查浏览器是否支持 Geolocation
-            if ('geolocation' in navigator) {
-                // 请求位置权限
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        console.log('位置权限已获取');
-                    },
-                    function(error) {
-                        console.error('位置权限获取失败:', error);
-                    }
-                );
-            } else {
-                showError('您的浏览器不支持地理定位功能');
-            }
-            
-            // 加载高德地图
-            loadAMapScript(function() {
-                initMap();
-            });
-        };
-        
-        // 处理权限错误
-        function handlePermissionError(error) {
-            let message = '获取位置权限失败';
-            
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    message = '用户拒绝了位置权限请求';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    message = '位置信息不可用';
-                    break;
-                case error.TIMEOUT:
-                    message = '获取位置超时';
-                    break;
-                default:
-                    message = '未知错误';
-            }
-            
-            showError(message + '<br>请在浏览器设置中允许访问位置信息');
-        }
-    </script>
+    });
+}
+
+// 静态商家数据
+const stores=[
+{id:1,name:'小桃饭堂',emoji:'🍱',type:'meal',distance:760,price:48,tags:['正餐','适合多人'],desc:'离你们近，适合多人，不容易踩雷。'},
+{id:2,name:'乌龙奶盖研究所',emoji:'🧋',type:'dessert',distance:420,price:22,tags:['下午茶','奶茶'],desc:'奶茶和小蛋糕都很适合边聊边坐。'},
+{id:3,name:'桃桃轻食碗',emoji:'🥗',type:'meal',distance:680,price:42,tags:['轻食','健康'],desc:'口味稳，适合中午快速决定。'},
+{id:4,name:'云朵咖啡馆',emoji:'☕',type:'dessert',distance:530,price:31,tags:['咖啡','聊天'],desc:'环境舒服，适合聊天和小坐。'},
+{id:5,name:'热辣小馆',emoji:'🍜',type:'meal',distance:910,price:38,tags:['面食','热乎'],desc:'想吃热乎一点的时候，这家命中率很高。'},
+{id:6,name:'发发烧烤屋',emoji:'🍢',type:'meal',distance:1200,price:56,tags:['夜宵','聚餐'],desc:'适合晚上聚餐，热闹型选手会喜欢。'},
+{id:7,name:'雪顶甜品站',emoji:'🍰',type:'dessert',distance:350,price:26,tags:['甜品','治愈'],desc:'如果你们想吃甜一点，这家很难出错。'},
+{id:8,name:'饭团和面',emoji:'🍛',type:'meal',distance:980,price:45,tags:['米饭','家常'],desc:'适合不想踩雷的时候直接决定。'}
+];
+
+const state={activePage:'home',type:'all',budget:null,lastPick:null};
+const pages={home:document.getElementById('page-home'),nearby:document.getElementById('page-nearby'),team:document.getElementById('page-team'),record:document.getElementById('page-record')};
+const navItems=document.querySelectorAll('.nav-item');
+function showToast(message){const toast=document.getElementById('toast');toast.textContent=message;toast.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove('show'),2200)}
+function switchPage(page){state.activePage=page;Object.entries(pages).forEach(([k,v])=>v.classList.toggle('active',k===page));navItems.forEach(item=>item.classList.toggle('active',item.dataset.page===page));if(page==='nearby') renderNearby();}
+function filterStores(){return stores.filter(s=>(state.type==='all'||s.type===state.type)&&(!state.budget||s.price<=state.budget));}
+function storeCard(store){return `<div class="food-item"><div class="food-cover ${store.type==='meal'?'bg-pink':'bg-mint'}">${store.emoji}</div><div class="food-copy"><strong>${store.name}</strong><p>${store.desc}</p><div class="food-meta"><span class="meta-chip">${store.distance}m</span><span class="meta-chip">人均${store.price}</span><span class="meta-chip">${store.tags.join(' · ')}</span></div><div class="food-actions"><button class="mini-btn mini-primary" data-pick-id="${store.id}">抽它</button><button class="mini-btn mini-ghost" data-detail-id="${store.id}">看详情</button></div></div></div>`}
+function renderHomeList(){const list=[...stores].sort(()=>0.5-Math.random()).slice(0,3);document.getElementById('homeRecommendList').innerHTML=list.map(storeCard).join('');bindDynamicButtons();}
+function renderNearby(){const list=filterStores();document.getElementById('nearbyCount').textContent=`共 ${list.length} 家`;document.getElementById('nearbyList').innerHTML=list.map(storeCard).join('');bindDynamicButtons();}
+function bindDynamicButtons(){document.querySelectorAll('[data-pick-id]').forEach(btn=>btn.onclick=()=>openResult(stores.find(s=>s.id===Number(btn.dataset.pickId))));document.querySelectorAll('[data-detail-id]').forEach(btn=>btn.onclick=()=>{const store=stores.find(s=>s.id===Number(btn.dataset.detailId));showToast(`查看「${store.name}」详情`);openResult(store);});document.querySelectorAll('.hotspot').forEach(node=>node.onclick=()=>{const store=stores.find(s=>s.name===node.dataset.store);openResult(store);});}
+function openResult(store){state.lastPick=store;document.getElementById('resultEmoji').textContent=store.emoji;document.getElementById('resultName').textContent=store.name;document.getElementById('resultDesc').textContent=store.desc;document.getElementById('resultMeta').innerHTML=`<span class="meta-chip">${store.distance}m</span><span class="meta-chip">人均${store.price}</span><span class="meta-chip">${store.tags.join(' · ')}</span>`;document.getElementById('resultOverlay').classList.add('show');}
+function randomPick(){const pool=filterStores();const store=pool[Math.floor(Math.random()*pool.length)];openResult(store);}
+document.getElementById('pickNow').onclick=randomPick;document.getElementById('teamPick').onclick=randomPick;document.getElementById('rerollPick').onclick=randomPick;document.getElementById('confirmPick').onclick=()=>{document.getElementById('resultOverlay').classList.remove('show');showToast(`已决定去「${state.lastPick.name}」`)};document.getElementById('resultOverlay').addEventListener('click',e=>{if(e.target.id==='resultOverlay')e.currentTarget.classList.remove('show')});
+document.querySelectorAll('[data-page]').forEach(item=>item.onclick=()=>switchPage(item.dataset.page));document.querySelectorAll('[data-back]').forEach(btn=>btn.onclick=()=>switchPage(btn.dataset.back));document.querySelectorAll('[data-action]').forEach(node=>node.onclick=()=>{const map={search:'正在打开搜索入口。',invite:'邀请链接已复制，快发给朋友吧。','quick-map':'正在切到附近地图。','open-team':'正在打开一起选页面。'};if(node.dataset.action==='quick-map') switchPage('nearby'); if(node.dataset.action==='open-team') switchPage('team'); showToast(map[node.dataset.action]||'操作已触发。');});
+document.querySelectorAll('.quick-card').forEach(card=>card.onclick=()=>{if(card.dataset.pick==='all') randomPick(); if(card.dataset.filter){state.type=card.dataset.filter; switchPage('nearby');}});
+document.getElementById('refreshList').onclick=()=>{renderHomeList();showToast('已经帮你换了一批推荐');};document.getElementById('resetFilters').onclick=()=>{state.type='all';state.budget=null;document.querySelectorAll('#filters .chip').forEach(c=>c.classList.remove('active-filter'));document.querySelector('#filters .chip[data-kind="all"]').classList.add('active-filter');renderNearby();};document.querySelectorAll('#filters .chip').forEach(chip=>chip.onclick=()=>{if(chip.dataset.kind) state.type=chip.dataset.kind; if(chip.dataset.budget) state.budget=Number(chip.dataset.budget); document.querySelectorAll('#filters .chip').forEach(c=>c.classList.remove('active-filter')); chip.classList.add('active-filter'); renderNearby();});
+
+// 初始化
+renderHomeList();
+renderNearby();
+
+// 加载高德地图SDK
+loadAMapScript(function() {
+    initLocation();
+});
+</script>
 </body>
 </html>
